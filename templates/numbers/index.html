@@ -1,0 +1,241 @@
+{% extends "base.html" %} {% from "macros.jinja" import window_vars with context
+%} {% block scripts %} {{ window_vars(user) }}
+<script src="{{ static_url_for('numbers/static', path='js/index.js') }}"></script>
+{% endblock %} {% block page %}
+<div class="row q-col-gutter-md">
+  <div class="col-12 col-md-7 q-gutter-y-md">
+    <q-btn
+      class="q-ma-md"
+      @click="formDialogNumbers.show = true"
+      color="primary"
+      >Create numbers game</q-btn
+    >
+
+    <q-card>
+      <q-card-section>
+        <div class="row items-center no-wrap q-mb-md">
+          <div class="col">
+            <h5 class="text-subtitle1 q-my-none">Numberss</h5>
+          </div>
+          <div class="col-auto">
+            <q-btn flat color="grey" @click="exportCSV">Export to CSV</q-btn>
+          </div>
+        </div>
+        <q-table
+          dense
+          flat
+          :rows="numbers"
+          row-key="id"
+          :columns="numbersTable.columns"
+          v-model:pagination="numbersTable.pagination"
+        >
+          <template v-slot:header="props">
+            <q-tr :props="props">
+              <q-th auto-width></q-th>
+              <q-th
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+                v-text="col.label"
+              ></q-th>
+              <q-th auto-width></q-th>
+            </q-tr>
+          </template>
+          <template v-slot:body="props">
+            <q-tr :props="props">
+              <q-td auto-width>
+                <q-btn
+                  unelevated
+                  dense
+                  size="sm"
+                  icon="launch"
+                  :color="($q.dark.isActive) ? 'grey-7' : 'grey-5'"
+                  type="a"
+                  :href="'/numbers/' + props.row.id"
+                  target="_blank"
+                ></q-btn>
+              </q-td>
+              <q-td
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+                v-text="col.value"
+              ></q-td>
+              <q-td auto-width>
+                <q-btn
+                  flat
+                  dense
+                  size="sm"
+                  @click="deleteNumbers(props.row.id)"
+                  icon="cancel"
+                  color="pink"
+                ></q-btn>
+                <q-btn
+                  flat
+                  dense
+                  size="sm"
+                  @click="openPlayers(props.row.players)"
+                  icon="groups"
+                  color="secondary"
+                  ><q-tooltip>View players</q-tooltip>
+                </q-btn>
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
+  </div>
+
+  <div class="col-12 col-md-5 q-gutter-y-md">
+    <q-card>
+      <q-card-section>
+        <h6 class="text-subtitle1 q-my-none">
+          {{SITE_TITLE}} Numbers extension
+        </h6>
+      </q-card-section>
+      <q-card-section class="q-pa-none">
+        <q-separator></q-separator>
+        <q-list> {% include "numbers/_api_docs.html" %} </q-list>
+      </q-card-section>
+    </q-card>
+  </div>
+
+  <q-dialog v-model="players.show" position="top">
+    <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
+      <div v-text="players.data"></div>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog
+    v-model="formDialogNumbers.show"
+    position="top"
+    @hide="closeFormDialog"
+  >
+    <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
+      <q-form @submit="createGame" class="q-gutter-md">
+        <q-input
+          filled
+          dense
+          v-model.trim="formDialogNumbers.data.name"
+          type="text"
+          label="Title *"
+        ></q-input>
+
+        <div class="row">
+          <div class="col">
+            <q-input dense filled v-model="formDialogNumbers.data.closing_date">
+              <template v-slot:prepend>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy
+                    cover
+                    transition-show="scale"
+                    transition-hide="scale"
+                  >
+                    <q-date
+                      v-model="formDialogNumbers.data.closing_date"
+                      mask="YYYY-MM-DD HH:mm"
+                    >
+                      <div class="row items-center justify-end">
+                        <q-btn
+                          v-close-popup
+                          label="Close"
+                          color="primary"
+                          flat
+                        />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+
+              <template v-slot:append>
+                <q-icon name="access_time" class="cursor-pointer">
+                  <q-popup-proxy
+                    cover
+                    transition-show="scale"
+                    transition-hide="scale"
+                  >
+                    <q-time
+                      v-model="formDialogNumbers.data.closing_date"
+                      mask="YYYY-MM-DD HH:mm"
+                      format24h
+                    >
+                      <div class="row items-center justify-end">
+                        <q-btn
+                          v-close-popup
+                          label="Close"
+                          color="primary"
+                          flat
+                        />
+                      </div>
+                    </q-time>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+          </div>
+          <div class="col">
+            <q-select
+              filled
+              dense
+              emit-value
+              class="overflow-hidden q-pl-xs"
+              v-model="formDialogNumbers.data.wallet"
+              :options="g.user.walletOptions"
+              label="Wallet *"
+            ></q-select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <q-input
+              filled
+              dense
+              v-model.trim="formDialogNumbers.data.buy_in_max"
+              type="number"
+              label="Max buy in"
+            ></q-input>
+          </div>
+          <q-select
+          class="q-pl-xs"
+          filled
+          dense
+          v-model="formDialogNumbers.data.odds"
+          :options="[10, 100, 1000, 10000]"
+          label="Odds"
+          emit-value
+          map-options
+        >
+          <q-tooltip>10 for (10-1, calculate last 2 digits from block), etc</q-tooltip>
+        </q-select>
+          <div class="col">
+            <q-input
+              class="q-pl-xs"
+              filled
+              dense
+              v-model.trim="formDialogNumbers.data.haircut"
+              type="number"
+              max="50"
+              label="Haircut % (max 50)"
+            ></q-input>
+          </div>
+        </div>
+        <div>
+          <q-btn
+            unelevated
+            color="primary"
+            :disable="
+            formDialogNumbers.data.name == null || formDialogNumbers.data.closing_date == null || formDialogNumbers.data.wallet == null || formDialogNumbers.data.buy_in == null || formDialogNumbers.data.haircut > 50"
+            type="submit"
+            >Create numbers</q-btn
+          >
+          <q-btn v-close-popup flat color="grey" class="q-ml-auto"
+            >Cancel</q-btn
+          >
+        </div>
+      </q-form>
+    </q-card>
+  </q-dialog>
+</div>
+{% endblock %}

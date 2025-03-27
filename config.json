@@ -1,0 +1,19 @@
+{
+  "name": "Numbers",
+  "version": "1.0.0",
+  "short_description": "Block based numbers game",
+  "tile": "/numbers/static/image/numbers.png",
+  "min_lnbits_version": "1.0.0",
+  "tags": ["gambling"],
+  "contributors": [
+    {
+      "name": "arcbtc",
+      "uri": "https://github.com/arcbtc",
+      "role": "Contributor"
+    }
+  ],
+  "images": [],
+  "description_md": "https://raw.githubusercontent.com/lnbits/numbers/main/description.md",
+  "terms_and_conditions_md": "https://raw.githubusercontent.com/lnbits/numbers/main/toc.md",
+  "license": "MIT"
+}
