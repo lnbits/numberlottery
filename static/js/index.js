@@ -79,7 +79,9 @@ window.app = Vue.createApp({
         .then(response => {
           if (response.data != null) {
             console.log(response.data)
-            this.games = response.data
+            for (const game of response.data) {
+              this.games.push(mapGame(game))
+            }
           }
         })
         .catch(err => {
@@ -111,7 +113,8 @@ window.app = Vue.createApp({
           data
         )
         if (response.data) {
-          this.games = response.data.map(mapGame)
+          console.log(response.data)
+          this.games.push(mapGame(response.data))
           this.formDialogNumbers.show = false
         }
       } catch (error) {

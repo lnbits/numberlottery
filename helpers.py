@@ -7,6 +7,7 @@ from lnbits.core.views.api import api_lnurlscan
 
 from .crud import (
     update_game,
+    update_player,
     get_all_game_players
 )
 import requests
@@ -39,26 +40,31 @@ def get_game_game_winner(block_hash: str, odds: int) -> int:
     tail_decimal = int(tail_hex, 16)
     return tail_decimal % odds
 
-async def calculate_winners(numbers):
+async def calculate_winners(game):
     if (
-        datetime.now().timestamp() > numbers.closing_date.timestamp()
-        and not numbers.completed
+        datetime.now().timestamp() > game.closing_date.timestamp()
+        and not game.completed
     ):
+        players = await get_all_game_players(game.id, game.height_number)
+        if not players:
+            game.completed = True
+            await update_game(game)
+            return
         block = get_block_after_now()
         if not block:
             return
-        numbers.block_height = block["id"]
-        numbers.height_number = get_game_game_winner(block["id"], numbers.odds)
-        players = await get_all_game_players(numbers.id, numbers.height_number)
+        game.block_height = block["id"]
+        game.height_number = get_game_game_winner(block["id"], game.odds)
+        players = await get_all_game_players(game.id, game.height_number)
         for player in players:
-            max_sat = (player.buy_in * numbers.odds) * (numbers.haircut / 100)
+            max_sat = (player.buy_in * game.odds) * (game.haircut / 100)
             pr = await get_pr(player.ln_address, max_sat)
             try:
                 await pay_invoice(
-                    wallet_id=numbers.wallet,
+                    wallet_id=game.wallet,
                     payment_request=pr,
                     max_sat=max_sat,
-                    description=f"({player.ln_address}) won the numbers {numbers.name}!",
+                    description=f"({player.ln_address}) won the numbers {game.name}!",
                 )
                 player.paid = True
                 await update_player(player)
@@ -66,6 +72,6 @@ async def calculate_winners(numbers):
                 player.paid = False
                 player.owed = max_sat
                 await update_player(player)
-        numbers.completed = True
-        await update_game(numbers)
+        game.completed = True
+        await update_game(game)
     return

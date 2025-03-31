@@ -3,50 +3,80 @@
   class="fixed-center q-pa-xl"
   :style="{ width: $q.screen.lt.sm ? '100%' : '600px' }"
 >
-  <q-card-section class="q-pa-none" v-if="activeGame && !satspot.completed">
+  <q-card-section class="q-pa-none" v-if="!completed">
     <center>
-      <h3 class="q-my-none q-mb-xl"><span v-text="satspot.name"></span></h3>
+      <h3 class="q-my-none q-mb-xl"><span v-text="numbers.name"></span></h3>
     </center>
     <div class="row justify-center q-gutter-md">
       <div class="col-auto">
         <q-badge outline size="xl" color="secondary">
           <div class="text-subtitle1">
-            Closing date: <span v-text="satspot.closing_date"></span>
+            Closing date: <span v-text="numbers.closing_date"></span>
           </div>
         </q-badge>
       </div>
       <div class="col-auto">
         <q-badge outline size="xl" color="secondary">
           <div class="text-subtitle1">
-            Buy In: <span v-text="satspot.buy_in"></span> sats
+            Max Buy In: <span v-text="numbers.buy_in_max"></span> sats
           </div>
         </q-badge>
       </div>
       <div class="col-auto">
         <q-badge outline size="xl" color="secondary">
           <div class="text-subtitle1">
-            Registration fee: <span v-text="satspot.haircut"></span> %
+            Fee: <span v-text="numbers.haircut"></span> %
           </div>
         </q-badge>
       </div>
       <div class="col-auto">
         <q-badge outline size="xl" color="secondary">
           <div class="text-subtitle1">
-            Current pot: <span v-text="pot"></span>
+            Odds: <span v-text="odds"></span>-1
+          </div>
+        </q-badge>
+      </div>
+      <div class="col-auto">
+
+        <q-badge @click="algorithm = true" outline size="xl" color="secondary">
+          <div class="text-subtitle1">
+            Provably fair algorithm
           </div>
         </q-badge>
       </div>
     </div>
 
     <q-form @submit="joinGame" class="q-gutter-md">
+      <div class="row justify-center q-gutter-md">
+        <div class="col-2">
+      <q-input
+      label="Bet amount"
+      type="number"
+      v-model="amount"
+      required
+    ></q-input>
+    </div>
+    <div class="col-2">
+    <q-input
+    :label="'Number between 0 and ' + (odds - 1)"
+    v-model="number"
+    lazy-rules
+    :rules="[val => val >= 0 || 'Number must be greater than 0', val => val < odds || 'Number must be less than ' + odds]"
+    type="number"
+    required
+  ></q-input>
+</div>
+<div class="col-6">
+
       <q-input
         label="Your LNadress"
-        class="q-mt-lg"
         type="text"
         v-model="lnaddress"
         required
       ></q-input>
-      <q-btn outline class="q-mt-lg" type="submit">Join Satspot</q-btn>
+    </div>
+  </div>
+      <q-btn outline class="q-mt-lg" type="submit">Join numbers game</q-btn>
       <q-btn
         class="q-ml-lg q-mt-md"
         unelevated
@@ -55,7 +85,7 @@
         icon="link"
         :color="($q.dark.isActive) ? 'grey-7' : 'grey-5'"
         @click="copyText"
-        ><q-tooltip>Copy satspot link</q-tooltip></q-btn
+        ><q-tooltip>Copy numbers link</q-tooltip></q-btn
       >
       <q-btn
         class="q-ml-lg q-mt-md"
@@ -65,18 +95,20 @@
         icon="help"
         :color="($q.dark.isActive) ? 'grey-7' : 'grey-5'"
         ><q-tooltip
-          >This is a Satspot game. <br />Paste in your LNaddress and pay the
-          invoice to join. <br />On the closing date you might win the pot.🤞
+          >This is a numbers game. <br />Pick your number, the amount of sats to bet and your LNaddress and pay the
+          invoice to join. <br />On the closing date the last block hash will be used to determine the winning number.
           <br />(minus the registration fee)</q-tooltip
         ></q-btn
       >
     </q-form>
   </q-card-section>
 
-  <q-card-section v-if="satspot.completed" class="q-pa-none">
+  <q-card-section v-else class="q-pa-none">
     <center>
       <h2 class="q-my-none">Game Complete</h2>
-      <h5 class="q-my-none"><span v-text="winner"></span></h5>
+      <h5 class="q-my-none">Block:<span v-text="block_height"></span>
+        ,Number:<span v-text="height_number">
+      </span></h5>
       <q-icon color="teal" name="check" size="30em"></q-icon>
     </center>
   </q-card-section>
@@ -99,6 +131,17 @@
   </q-card>
 </q-dialog>
 
+<q-dialog v-model="algorithm" position="top">
+  <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
+    <code>
+      block_hash = (from last block <span v-text="numbers.closing_date"></span>)<br>
+      tail_hex = block_hash[-4:] <br>
+      tail_decimal = int(tail_hex, 16)<br>
+      height_number = tail_decimal % <span v-text="odds"></span> (odds being <span v-text="odds"></span>-1)<br>
+    </code>
+  </q-card>
+</q-dialog>
+
 <q-dialog v-model="paymentTick" position="top">
   <q-icon
     name="check"
@@ -115,19 +158,24 @@
     mixins: [windowMixin],
     data() {
       return {
-        activeGame: false,
+        algorithm: false,
         gameComplete: false,
-        satspotId: '{{ satspot_id }}',
-        winner: '{{ winner }}',
+        game_id: '{{ game_id }}',
+        completed: '{{ completed }}' == 'True' ? true : false,
+        block_height: '{{ block_height }}',
+        height_number: '{{ height_number }}',
+        odds: '{{ odds }}',
         pot: parseFloat('{{ pot }}').toFixed(1),
         paymentTick: false,
-        satspot: {
+        numbers: {
           name: '',
           number_of_players: 0,
           buy_in: 0
         },
-        satspot: {},
+        numbers: {},
         lnaddress: '',
+        number: 0,
+        amount: 0,
         qr: {
           show: false,
           payment_request: '',
@@ -136,36 +184,16 @@
       }
     },
     methods: {
-      getQueryParam(param) {
-        const urlParams = new URLSearchParams(window.location.search)
-        return urlParams.get(param)
-      },
-      async getGame() {
-        const response = await LNbits.api.request(
-          'GET',
-          `/satspot/api/v1/satspot/satspot/${this.satspotId}`,
-          ''
-        )
-        if (response.data) {
-          this.satspot = response.data
-          const date = new Date(this.satspot.closing_date)
-          this.satspot.closing_date = date
-            .toISOString()
-            .replace('T', ' ')
-            .slice(0, 19)
-          this.activeGame = true
-        }
-      },
       async joinGame() {
         try {
           const data = {
-            satspot_id: this.satspotId,
-            settings_id: this.satspotPageId,
+            game_id: this.game_id,
+            settings_id: this.numbersPageId,
             ln_address: this.lnaddress
           }
           const response = await LNbits.api.request(
             'POST',
-            '/satspot/api/v1/satspot/join/',
+            '/numbers/api/v1/numbers/join/',
             '',
             data
           )
@@ -195,8 +223,8 @@
             this.paymentTick = true
             this.pot = (
               parseFloat(this.pot) +
-              (this.satspot.buy_in -
-                this.satspot.buy_in * (parseFloat(this.satspot.haircut) / 100))
+              (this.numbers.buy_in -
+                this.numbers.buy_in * (parseFloat(this.numbers.haircut) / 100))
             ).toFixed(1)
             this.lnaddress = ''
             ws.close()
@@ -206,7 +234,7 @@
       copyText() {
         Quasar.copyToClipboard(window.location.href).then(() => {
           Quasar.Notify.create({
-            message: 'Copied satspot link to clipboard!',
+            message: 'Copied numbers link to clipboard!',
             position: 'bottom'
           })
         })
@@ -221,9 +249,19 @@
       }
     },
     async mounted() {
-      await this.getGame()
-      if (this.winner != 'No players') {
-        this.winner = `Winner: ${this.winner}`
+      try {
+        const response = await LNbits.api.request(
+          'GET',
+          `/numbers/api/v1/numbers/${this.game_id}`
+        )
+        this.numbers = response.data
+        this.numbers.closing_date = Quasar.date.formatDate(
+    new Date(this.numbers.closing_date),
+    'YYYY-MM-DD HH:mm'
+  )
+        this.activeGame = true
+      } catch (error) {
+        LNbits.utils.notifyApiError(error)
       }
     }
   })

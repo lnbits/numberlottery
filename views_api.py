@@ -32,12 +32,12 @@ async def api_create_numbers(
         )
     data.wallet = key_info.wallet.id
     data.user = key_info.wallet.user
-    numbers = await create_game(data)
-    if not numbers:
+    game = await create_game(data)
+    if not game:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST, detail="Failed to create game"
         )
-    return numbers
+    return game
 
 
 @numbers_api_router.get("/api/v1/numbers")
@@ -103,7 +103,7 @@ async def api_numbers_delete(
 
 
 @numbers_api_router.get(
-    "/api/v1/numbers/numbers/{game_id}", status_code=HTTPStatus.OK
+    "/api/v1/numbers/{game_id}", status_code=HTTPStatus.OK
 )
 async def api_get_game(game_id: str):
     numbers = await get_game(game_id)
@@ -117,7 +117,7 @@ async def api_get_game(game_id: str):
         id=numbers.id,
         name=numbers.name,
         closing_date=numbers.closing_date,
-        buy_in=numbers.buy_in,
+        buy_in_max=numbers.buy_in_max,
         haircut=numbers.haircut,
         completed=numbers.completed,
     )

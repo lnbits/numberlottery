@@ -28,8 +28,6 @@ async def run_by_the_minute_task():
         try:
             games = await get_all_pending_games()
             for game in games:
-                logger.debug(game)
-                logger.error("Found pending numbers, calculating winner")
                 await calculate_winners(game)
         except Exception as ex:
             logger.error(ex)
