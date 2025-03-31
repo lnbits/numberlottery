@@ -6,8 +6,8 @@ from lnbits.core.services import pay_invoice
 from lnbits.core.views.api import api_lnurlscan
 
 from .crud import (
-    update_numbers,
-    get_all_numbers_players
+    update_game,
+    get_all_game_players
 )
 import requests
 from datetime import datetime, timezone
@@ -34,7 +34,7 @@ def get_block_after_now():
             return block
     return None
 
-def get_numbers_game_winner(block_hash: str, odds: int) -> int:
+def get_game_game_winner(block_hash: str, odds: int) -> int:
     tail_hex = block_hash[-4:]
     tail_decimal = int(tail_hex, 16)
     return tail_decimal % odds
@@ -48,8 +48,8 @@ async def calculate_winners(numbers):
         if not block:
             return
         numbers.block_height = block["id"]
-        numbers.height_number = get_numbers_game_winner(block["id"], numbers.odds)
-        players = await get_all_numbers_players(numbers.id, numbers.height_number)
+        numbers.height_number = get_game_game_winner(block["id"], numbers.odds)
+        players = await get_all_game_players(numbers.id, numbers.height_number)
         for player in players:
             max_sat = (player.buy_in * numbers.odds) * (numbers.haircut / 100)
             pr = await get_pr(player.ln_address, max_sat)
@@ -67,5 +67,5 @@ async def calculate_winners(numbers):
                 player.owed = max_sat
                 await update_player(player)
         numbers.completed = True
-        await update_numbers(numbers)
+        await update_game(numbers)
     return

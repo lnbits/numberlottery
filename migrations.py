@@ -4,7 +4,7 @@ async def m001_add_numbers(db):
     """
     await db.execute(
         f"""
-        CREATE TABLE numbers.numbers (
+        CREATE TABLE numbers.games (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             wallet TEXT NOT NULL,
@@ -29,7 +29,7 @@ async def m001_add_players(db):
         f"""
         CREATE TABLE numbers.players (
             id TEXT PRIMARY KEY,
-            numbers_id TEXT NOT NULL,
+            game_id TEXT NOT NULL,
             height_number TEXT NOT NULL,
             buy_in INTEGER NOT NULL,
             ln_address TEXT NOT NULL,

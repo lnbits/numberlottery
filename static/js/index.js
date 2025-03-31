@@ -34,6 +34,12 @@ window.app = Vue.createApp({
             field: 'buy_in'
           },
           {
+            name: 'odds',
+            align: 'left',
+            label: 'odds',
+            field: 'odds'
+          },
+          {
             name: 'haircut',
             align: 'left',
             label: 'haircut',
@@ -113,8 +119,8 @@ window.app = Vue.createApp({
         LNbits.utils.notifyApiError(error)
       }
     },
-    deleteNumbers(satpotid) {
-      const numbers = _.findWhere(this.numbers, {id: satpotid})
+    deleteNumbers(game_id) {
+      const numbers = _.findWhere(this.numbers, {id: game_id})
 
       LNbits.utils
         .confirmDialog('Are you sure you want to delete this numbers?')
@@ -122,13 +128,13 @@ window.app = Vue.createApp({
           LNbits.api
             .request(
               'DELETE',
-              '/numbers/api/v1/numbers/' + satpotid,
+              '/numbers/api/v1/numbers/' + game_id,
               _.findWhere(this.g.user.wallets, {id: numbers.wallet}).adminkey
             )
             .then(response => {
               this.numbers = _.reject(
                 this.numbers,
-                obj => obj.id === satpotid
+                obj => obj.id === game_id
               )
             })
             .catch(err => {

@@ -197,18 +197,25 @@
               label="Max buy in"
             ></q-input>
           </div>
+          <div class="col">
           <q-select
           class="q-pl-xs"
           filled
           dense
           v-model="formDialogNumbers.data.odds"
-          :options="[10, 100, 1000, 10000]"
+          :options="[
+          { label: '10-1', value: 10 },
+          { label: '100-1', value: 100 },
+          { label: '1000-1', value: 1000 },
+          { label: '10000-1', value: 10000 }
+        ]"
           label="Odds"
           emit-value
           map-options
         >
           <q-tooltip>10 for (10-1, calculate last 2 digits from block), etc</q-tooltip>
         </q-select>
+      </div>
           <div class="col">
             <q-input
               class="q-pl-xs"

@@ -10,36 +10,39 @@ from loguru import logger
 from starlette.exceptions import HTTPException
 
 from .crud import (
-    create_numbers,
-    delete_numbers,
-    get_numbers,
-    get_numbers_by_user,
+    create_game,
+    delete_game,
+    get_game,
+    get_game_by_user,
 )
 from .helpers import get_pr
-from .models import CreateNumbers, Getgame, JoinNumbersGame
+from .models import Game, Player
 
 numbers_api_router = APIRouter()
 
 
 @numbers_api_router.post("/api/v1/numbers", status_code=HTTPStatus.OK)
 async def api_create_numbers(
-    data: CreateNumbers, key_info: WalletTypeInfo = Depends(require_admin_key)
+    data: Game, key_info: WalletTypeInfo = Depends(require_admin_key)
 ):
     if data.haircut < 0 or data.haircut > 50:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Haircut must be between 0 and 50",
         )
-    numbers = await create_numbers(data, key_info.wallet.id, key_info.wallet.user)
+    data.wallet = key_info.wallet.id
+    data.user = key_info.wallet.user
+    logger.debug(data)
+    numbers = await create_game(data)
     if not numbers:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="Failed to create numbers"
+            status_code=HTTPStatus.BAD_REQUEST, detail="Failed to create game"
         )
     return numbers
 
 
 @numbers_api_router.get("/api/v1/numbers")
-async def api_get_numbers(
+async def api_get_game(
     key_info: WalletTypeInfo = Depends(require_admin_key),
 ):
     user = await get_user(key_info.wallet.user)
@@ -47,13 +50,13 @@ async def api_get_numbers(
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST, detail="Failed to get user"
         )
-    numbers = await get_numbers_by_user(user.id)
+    numbers = await get_game_by_user(user.id)
     return numbers
 
 
 @numbers_api_router.post("/api/v1/numbers/join/", status_code=HTTPStatus.OK)
-async def api_join_numbers(data: JoinNumbersGame):
-    numbers_game = await get_numbers(data.numbers_id)
+async def api_join_numbers(data: Player):
+    numbers_game = await get_game(data.game_id)
     logger.debug(numbers_game)
     if not numbers_game:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="No game found")
@@ -73,19 +76,19 @@ async def api_join_numbers(data: JoinNumbersGame):
         extra={
             "tag": "numbers",
             "ln_address": data.ln_address,
-            "numbers_id": data.numbers_id,
+            "game_id": data.game_id,
             "height_number": data.height_number,
         },
     )
     return {"payment_hash": payment.payment_hash, "payment_request": payment.bolt11}
 
 
-@numbers_api_router.delete("/api/v1/numbers/{numbers_id}")
+@numbers_api_router.delete("/api/v1/numbers/{game_id}")
 async def api_numbers_delete(
-    numbers_id: str,
+    game_id: str,
     key_info: WalletTypeInfo = Depends(require_admin_key),
 ):
-    numbers = await get_numbers(numbers_id)
+    numbers = await get_game(game_id)
     if not numbers:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Pay link does not exist."
@@ -96,21 +99,21 @@ async def api_numbers_delete(
             status_code=HTTPStatus.FORBIDDEN, detail="Not your pay link."
         )
 
-    await delete_numbers(numbers_id)
+    await delete_game(game_id)
 
 
 @numbers_api_router.get(
-    "/api/v1/numbers/numbers/{numbers_id}", status_code=HTTPStatus.OK
+    "/api/v1/numbers/numbers/{game_id}", status_code=HTTPStatus.OK
 )
-async def api_get_numbers(numbers_id: str):
-    numbers = await get_numbers(numbers_id)
+async def api_get_game(game_id: str):
+    numbers = await get_game(game_id)
     if not numbers:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Numbers game does not exist."
         )
     if numbers.closing_date.timestamp() < datetime.now().timestamp():
         numbers.completed = True
-    return Getgame(
+    return Game(
         id=numbers.id,
         name=numbers.name,
         closing_date=numbers.closing_date,

@@ -4,7 +4,7 @@ from lnbits.core.models import User
 from lnbits.decorators import check_user_exists
 from lnbits.helpers import template_renderer
 
-from .crud import get_numbers
+from .crud import get_game
 
 numbers_generic_router: APIRouter = APIRouter()
 
@@ -20,13 +20,13 @@ async def index(request: Request, user: User = Depends(check_user_exists)):
     )
 
 
-@numbers_generic_router.get("/{numbers_id}", response_class=HTMLResponse)
-async def display_numbers(request: Request, numbers_id: str):
-    numbers = await get_numbers(numbers_id)
+@numbers_generic_router.get("/{game_id}", response_class=HTMLResponse)
+async def display_numbers(request: Request, game_id: str):
+    numbers = await get_game(game_id)
     return numbers_renderer().TemplateResponse(
         "numbers/numbers.html",
         {
-            "numbers_id": numbers_id,
+            "game_id": game_id,
             "completed": numbers.completed,
             "height_number": numbers.completed,
             "block_height": numbers.completed,

@@ -1,41 +1,22 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import Query
 from pydantic import BaseModel
 
-
-class CreateNumbers(BaseModel):
-    name: str
-    haircut: int = 0
-    closing_date: datetime = datetime.now(timezone.utc) + timedelta(days=1)
-    odds: int = 0
-
-
-class Numbers(BaseModel):
+class Game(BaseModel):
     id: Optional[str] = None
-    wallet: str
+    wallet: Optional[str] = None
     user: Optional[str] = None
-    name: str
+    name: Optional[str] = None
     closing_date: datetime
     buy_in_max: int = 0
     haircut: int = 0
+    odds: int = 0
     completed: bool = False
     block_height: str = ""
     height_number: int = 0
     created_at: datetime = datetime.now(timezone.utc)
-
-
-class GetNumbersGame(BaseModel):
-    id: Optional[str] = None
-    name: str
-    closing_date: datetime
-    buy_in_max: int = 0
-    haircut: int = 0
-    block_height: str = ""
-    height_number: int = 0
-    completed: bool = False
-
 
 class Player(BaseModel):
     id: Optional[str] = None
