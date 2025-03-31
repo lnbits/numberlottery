@@ -54,17 +54,17 @@
       type="number"
       v-model="amount"
       required
-    ></q-input>
+    ><q-tooltip>amount sats to bet</q-tooltip></q-input>
     </div>
     <div class="col-2">
     <q-input
-    :label="'Number between 0 and ' + (odds - 1)"
+    label="Number"
     v-model="number"
     lazy-rules
     :rules="[val => val >= 0 || 'Number must be greater than 0', val => val < odds || 'Number must be less than ' + odds]"
     type="number"
     required
-  ></q-input>
+  ><q-tooltip>number to bet on (between 0 and <span v-text="odds - 1"></span>)</q-tooltip></q-input>
 </div>
 <div class="col-6">
 
@@ -73,7 +73,7 @@
         type="text"
         v-model="lnaddress"
         required
-      ></q-input>
+      ><q-tooltip>your lightning address</q-tooltip></q-input>
     </div>
   </div>
       <q-btn outline class="q-mt-lg" type="submit">Join numbers game</q-btn>
@@ -95,7 +95,7 @@
         icon="help"
         :color="($q.dark.isActive) ? 'grey-7' : 'grey-5'"
         ><q-tooltip
-          >This is a numbers game. <br />Pick your number, the amount of sats to bet and your LNaddress and pay the
+          >This is a provably fair numbers game.<br />Instead of a number in the paper it uses bitcoin blocks. <br />Pick your number, the amount of sats to bet and your LNaddress and pay the
           invoice to join. <br />On the closing date the last block hash will be used to determine the winning number.
           <br />(minus the registration fee)</q-tooltip
         ></q-btn
