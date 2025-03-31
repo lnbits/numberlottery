@@ -1,4 +1,4 @@
-const mapNumberss = obj => {
+const mapGame = obj => {
   obj._data = _.clone(obj)
   obj.closing_date = Quasar.date.formatDate(
     new Date(obj.closing_date),
@@ -12,7 +12,7 @@ window.app = Vue.createApp({
   mixins: [windowMixin],
   data() {
     return {
-      numbers: [],
+      games: [],
       players: {
         show: false,
         data: []
@@ -28,10 +28,10 @@ window.app = Vue.createApp({
             field: 'closing_date'
           },
           {
-            name: 'buy_in',
+            name: 'buy_in_max',
             align: 'left',
-            label: 'buy_in',
-            field: 'buy_in'
+            label: 'buy_in_max',
+            field: 'buy_in_max'
           },
           {
             name: 'odds',
@@ -69,10 +69,7 @@ window.app = Vue.createApp({
     }
   },
   methods: {
-    exportCSV() {
-      LNbits.utils.exportCSV(this.numbersTable.columns, this.numbers)
-    },
-    async getNumbersGames() {
+    async getGames() {
       await LNbits.api
         .request(
           'GET',
@@ -81,7 +78,8 @@ window.app = Vue.createApp({
         )
         .then(response => {
           if (response.data != null) {
-            this.numbers = response.data
+            console.log(response.data)
+            this.games = response.data
           }
         })
         .catch(err => {
@@ -97,7 +95,8 @@ window.app = Vue.createApp({
       const unixTimestamp = Math.floor(date.getTime() / 1000)
       const data = {
         name: this.formDialogNumbers.data.name,
-        buy_in: this.formDialogNumbers.data.buy_in,
+        buy_in_max: this.formDialogNumbers.data.buy_in_max,
+        odds: this.formDialogNumbers.data.odds,
         closing_date: parseInt(unixTimestamp),
         haircut: this.formDialogNumbers.data.haircut
       }
@@ -112,15 +111,15 @@ window.app = Vue.createApp({
           data
         )
         if (response.data) {
-          this.numbers = response.data.map(mapNumberss)
+          this.games = response.data.map(mapGame)
           this.formDialogNumbers.show = false
         }
       } catch (error) {
         LNbits.utils.notifyApiError(error)
       }
     },
-    deleteNumbers(game_id) {
-      const numbers = _.findWhere(this.numbers, {id: game_id})
+    deleteGame(game_id) {
+      const game = _.findWhere(this.games, {id: game_id})
 
       LNbits.utils
         .confirmDialog('Are you sure you want to delete this numbers?')
@@ -129,11 +128,11 @@ window.app = Vue.createApp({
             .request(
               'DELETE',
               '/numbers/api/v1/numbers/' + game_id,
-              _.findWhere(this.g.user.wallets, {id: numbers.wallet}).adminkey
+              _.findWhere(this.g.user.wallets, {id: game.wallet}).adminkey
             )
             .then(response => {
-              this.numbers = _.reject(
-                this.numbers,
+              this.games = _.reject(
+                this.games,
                 obj => obj.id === game_id
               )
             })
@@ -141,10 +140,13 @@ window.app = Vue.createApp({
               LNbits.utils.notifyApiError(err)
             })
         })
+    },
+    exportCSV() {
+      LNbits.utils.exportCSV(this.numbersTable.columns, this.games)
     }
   },
-  async created() {
+  async mounted() {
     // CHECK COINFLIP SETTINGS
-    await this.getNumbersGames()
+    await this.getGames()
   }
 })

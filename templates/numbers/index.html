@@ -15,7 +15,7 @@
       <q-card-section>
         <div class="row items-center no-wrap q-mb-md">
           <div class="col">
-            <h5 class="text-subtitle1 q-my-none">Numberss</h5>
+            <h5 class="text-subtitle1 q-my-none">Games</h5>
           </div>
           <div class="col-auto">
             <q-btn flat color="grey" @click="exportCSV">Export to CSV</q-btn>
@@ -66,7 +66,7 @@
                   flat
                   dense
                   size="sm"
-                  @click="deleteNumbers(props.row.id)"
+                  @click="deleteGame(props.row.id)"
                   icon="cancel"
                   color="pink"
                 ></q-btn>
@@ -233,7 +233,7 @@
             unelevated
             color="primary"
             :disable="
-            formDialogNumbers.data.name == null || formDialogNumbers.data.closing_date == null || formDialogNumbers.data.wallet == null || formDialogNumbers.data.buy_in == null || formDialogNumbers.data.haircut > 50"
+            formDialogNumbers.data.name == null || formDialogNumbers.data.closing_date == null || formDialogNumbers.data.wallet == null || formDialogNumbers.data.buy_in_max == null || formDialogNumbers.data.haircut > 50"
             type="submit"
             >Create numbers</q-btn
           >

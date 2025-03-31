@@ -13,7 +13,7 @@ from .crud import (
     create_game,
     delete_game,
     get_game,
-    get_game_by_user,
+    get_games_by_user,
 )
 from .helpers import get_pr
 from .models import Game, Player
@@ -32,7 +32,6 @@ async def api_create_numbers(
         )
     data.wallet = key_info.wallet.id
     data.user = key_info.wallet.user
-    logger.debug(data)
     numbers = await create_game(data)
     if not numbers:
         raise HTTPException(
@@ -50,8 +49,9 @@ async def api_get_game(
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST, detail="Failed to get user"
         )
-    numbers = await get_game_by_user(user.id)
-    return numbers
+    games = await get_games_by_user(user.id)
+    logger.debug(games)
+    return games
 
 
 @numbers_api_router.post("/api/v1/numbers/join/", status_code=HTTPStatus.OK)

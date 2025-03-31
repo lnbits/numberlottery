@@ -2,7 +2,7 @@ from typing import List
 
 from lnbits.db import Database
 from lnbits.helpers import urlsafe_short_hash
-
+from datetime import datetime
 from .models import Game, Player
 
 db = Database("ext_numbers")
@@ -27,7 +27,7 @@ async def get_game(game_id: str) -> Game:
         Game,
     )
 
-async def get_game_by_user(user: str) -> List[Game]:
+async def get_games_by_user(user: str) -> List[Game]:
     return await db.fetchall(
         "SELECT * FROM numbers.games WHERE user = :user",
         {"user": user},
@@ -36,8 +36,8 @@ async def get_game_by_user(user: str) -> List[Game]:
 
 async def get_all_pending_games() -> List[Game]:
     return await db.fetchall(
-        "SELECT * FROM numbers.games WHERE completed = :completed",
-        {"completed": 0},
+        "SELECT * FROM numbers.games WHERE completed = :completed AND closing_date < :closing_date",
+        {"completed": 0, "closing_date": datetime.now()},
         Game,
     )
 
