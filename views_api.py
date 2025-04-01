@@ -64,6 +64,10 @@ async def api_join_numbers(data: Player):
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST, detail="Game already ended"
         )
+    if numbers_game.closing_date.timestamp() - (30 * 60) < datetime.now().timestamp():
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail="Game closing within 30mins, no more entries"
+        )
     pay_req = await get_pr(data.ln_address, numbers_game.buy_in)
     if not pay_req:
         raise HTTPException(

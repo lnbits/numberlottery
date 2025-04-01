@@ -40,6 +40,9 @@ def get_game_game_winner(block_hash: str, odds: int) -> int:
     tail_decimal = int(tail_hex, 16)
     return tail_decimal % odds
 
+# Protects against blocks taking longer than 25mins to be mined.
+# In views_api we check if the game is closing within 30 minutes, and stop all bets.
+# Between the two checks we have a 5 minute buffer.
 async def calculate_winners(game):
     if (
         datetime.now().timestamp() > game.closing_date.timestamp()
@@ -52,6 +55,8 @@ async def calculate_winners(game):
             return
         block = get_block_after_now()
         if not block:
+            return
+        if block["timestamp"] > game.closing_date.timestamp() or datetime.now(timezone.utc).timestamp() - block["timestamp"] > 25 * 60:
             return
         game.block_height = block["id"]
         game.height_number = get_game_game_winner(block["id"], game.odds)
