@@ -26,14 +26,9 @@ async def get_pr(ln_address, amount):
     except Exception:
         return None
 
-def get_block_after_now():
-    now = datetime.now(timezone.utc)
+def get_latest_block():
     blocks = requests.get("https://mempool.space/api/blocks").json()
-    for block in blocks:
-        block_time = datetime.fromtimestamp(block["timestamp"], tz=timezone.utc)
-        if block_time > now:
-            return block
-    return None
+    return blocks[0]
 
 def get_game_game_winner(block_hash: str, odds: int) -> int:
     tail_hex = block_hash[-4:]
@@ -53,7 +48,7 @@ async def calculate_winners(game):
             game.completed = True
             await update_game(game)
             return
-        block = get_block_after_now()
+        block = get_latest_block()
         if not block:
             return
         if block["timestamp"] > game.closing_date.timestamp() or datetime.now(timezone.utc).timestamp() - block["timestamp"] > 25 * 60:
