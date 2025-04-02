@@ -38,44 +38,48 @@ def get_game_game_winner(block_hash: str, odds: int) -> int:
 
 
 async def calculate_winners(game):
-    if (
-        datetime.now().timestamp() > game.closing_date.timestamp()
-        and not game.completed
-    ):
-        players = await get_all_unpaid_players(game.id)
-        if not players:
-            game.completed = True
-            await update_game(game)
-            return
-        block = await get_latest_block()
-        if not block:
-            return
-        if datetime.now(timezone.utc).timestamp() > game.closing_date.timestamp():
-            pass
-        elif (
-            block["timestamp"] > game.closing_date.timestamp()
-            or datetime.now(timezone.utc).timestamp() - block["timestamp"] > 25 * 60
-        ):
-            return
-        game.block_height = block["id"]
-        game.height_number = get_game_game_winner(block["id"], game.odds)
-        players = await get_all_unpaid_players(game.id)
-        for player in players:
-            max_sat = (player.buy_in * game.odds) * (game.haircut / 100)
-            pr = await get_pr(player.ln_address, max_sat)
-            try:
-                await pay_invoice(
-                    wallet_id=game.wallet,
-                    payment_request=pr,
-                    max_sat=max_sat,
-                    description=f"({player.ln_address}) won the numbers {game.name}!",
-                )
-                player.paid = True
-                await update_player(player)
-            except Exception:
-                player.paid = False
-                player.owed = max_sat
-                await update_player(player)
+    if game.completed:
+        return
+    if datetime.now().timestamp() < game.closing_date.timestamp():
+        return
+    players = await get_all_unpaid_players(game.id)
+    if not players:
         game.completed = True
         await update_game(game)
+        return
+    block = await get_latest_block()
+    if not block:
+        return
+    # buffer to stop cheating
+    if datetime.now(timezone.utc).timestamp() > game.closing_date.timestamp():
+        pass
+    elif (
+        block["timestamp"] > game.closing_date.timestamp()
+        or datetime.now(timezone.utc).timestamp() - block["timestamp"] > 25 * 60
+    ):
+        return
+    # get the winning number
+    game.block_height = block["id"]
+    game.height_number = get_game_game_winner(block["id"], game.odds)
+    players = await get_all_unpaid_players(game.id)
+    # pay all the winning players
+    for player in players:
+        max_sat = (player.buy_in * game.odds) * (game.haircut / 100)
+        pr = await get_pr(player.ln_address, max_sat)
+        try:
+            await pay_invoice(
+                wallet_id=game.wallet,
+                payment_request=pr,
+                max_sat=max_sat,
+                description=f"({player.ln_address}) won the numbers {game.name}!",
+            )
+            player.paid = True
+            await update_player(player)
+        except Exception:
+            # if payment fails, player is owed and if they complain admin can pay them manually
+            player.paid = False
+            player.owed = max_sat
+            await update_player(player)
+    game.completed = True
+    await update_game(game)
     return
