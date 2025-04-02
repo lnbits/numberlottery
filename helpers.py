@@ -76,7 +76,7 @@ async def calculate_winners(game):
             player.paid = True
             await update_player(player)
         except Exception:
-            # if payment fails, player is owed and if they complain admin can pay them manually
+            # if fails, player is owed and paid manually by admin
             player.paid = False
             player.owed = max_sat
             await update_player(player)
