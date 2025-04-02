@@ -1,14 +1,20 @@
-
 <q-card-section>
   <p><b>Bitcoin Numbers</b></p>
   <h5 class="text-subtitle1 q-my-none">
-    A provably fair numbers game, powered by Bitcoin block data.
+    A provably fair "numbers" game, powered by Bitcoin block data.
   </h5>
   <p>
-    Set a date/time, and at that time the latest bitcoin block hash will be fetched and a winning number calculated.
-  </br>Risks: This game relies on block data from mempool.space, which means you're trusting them not to manipulate it. In theory, if the prize were large enough, miners might try to influence the outcome—but that would require a very LARGE jackpot to make it worthwhile.
-</p>
-</q-card-section>
+    Set a date/time, odds, and at that time the latest bitcoin block hash will
+    be fetched and a winning number calculated.
+    <br /><br />How it works: <br />On the closing date, the game takes the last
+    block hash and converts it to a number between 0 and (whatever you set the
+    odds to). <br />The higher the Odds, the more difficult it is to win/the
+    more users win (-haircut). <br />Max Odds is 10,000,000-1 <br /><br />Risks:
+    <br />This game relies on block data from mempool.space, which means you're
+    trusting them not to manipulate it. <br />In theory, this game could skewer
+    mining incentives, if the prize were so big its within miners interest to
+    mine a block with certain hash ending.
+  </p>
 </q-card-section>
 <q-expansion-item
   group="extras"

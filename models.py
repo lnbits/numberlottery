@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi import Query
 from pydantic import BaseModel
 
+
 class Game(BaseModel):
     id: Optional[str] = None
     wallet: Optional[str] = None
@@ -18,9 +19,13 @@ class Game(BaseModel):
     height_number: int = 0
     created_at: datetime = datetime.now(timezone.utc)
 
+    class Config:
+        extra = "allow"
+
+
 class Player(BaseModel):
     id: Optional[str] = None
-    numbers_id: str = Query(None)
+    game_id: str = Query(None)
     height_number: int = 0
     buy_in: int = 0
     ln_address: str = Query(None)

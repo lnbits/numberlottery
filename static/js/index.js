@@ -56,6 +56,28 @@ window.app = Vue.createApp({
           rowsPerPage: 10
         }
       },
+      playersTable: {
+        columns: [
+          {name: 'id', align: 'left', label: 'ID', field: 'id'},
+          {
+            name: 'ln_address',
+            align: 'left',
+            label: 'LN Address',
+            field: 'ln_address'
+          },
+          {name: 'buy_in', align: 'left', label: 'Buy in', field: 'buy_in'},
+          {
+            name: 'height_number',
+            align: 'left',
+            label: 'Number',
+            field: 'height_number'
+          },
+          {name: 'owed', align: 'left', label: 'Owed', field: 'owed'}
+        ],
+        pagination: {
+          rowsPerPage: 10
+        }
+      },
       formDialogNumbers: {
         show: false,
         fixedAmount: true,
@@ -71,11 +93,7 @@ window.app = Vue.createApp({
   methods: {
     async getGames() {
       await LNbits.api
-        .request(
-          'GET',
-          '/numbers/api/v1/numbers',
-          this.g.user.wallets[0].adminkey
-        )
+        .request('GET', '/numbers/api/v1', this.g.user.wallets[0].adminkey)
         .then(response => {
           if (response.data != null) {
             console.log(response.data)
@@ -88,9 +106,24 @@ window.app = Vue.createApp({
           LNbits.utils.notifyApiError(err)
         })
     },
-    async openPlayers(players) {
-      this.players.show = true
-      this.players.data = players.split(',')
+    async openPlayers(game_id) {
+      await LNbits.api
+        .request(
+          'GET',
+          '/numbers/api/v1/players/' + game_id,
+          this.g.user.wallets[0].adminkey
+        )
+        .then(response => {
+          if (response.data != null) {
+            this.players.data = response.data
+          }
+        })
+        .finally(() => {
+          this.players.show = true
+        })
+        .catch(err => {
+          LNbits.utils.notifyApiError(err)
+        })
     },
     async createGame() {
       const date = new Date(this.formDialogNumbers.data.closing_date)
@@ -108,7 +141,7 @@ window.app = Vue.createApp({
       try {
         const response = await LNbits.api.request(
           'POST',
-          '/numbers/api/v1/numbers',
+          '/numbers/api/v1',
           wallet.adminkey,
           data
         )
@@ -130,14 +163,11 @@ window.app = Vue.createApp({
           LNbits.api
             .request(
               'DELETE',
-              '/numbers/api/v1/numbers/' + game_id,
+              '/numbers/api/v1/' + game_id,
               _.findWhere(this.g.user.wallets, {id: game.wallet}).adminkey
             )
             .then(response => {
-              this.games = _.reject(
-                this.games,
-                obj => obj.id === game_id
-              )
+              this.games = _.reject(this.games, obj => obj.id === game_id)
             })
             .catch(err => {
               LNbits.utils.notifyApiError(err)

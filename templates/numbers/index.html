@@ -74,7 +74,7 @@
                   flat
                   dense
                   size="sm"
-                  @click="openPlayers(props.row.players)"
+                  @click="openPlayers(props.row.id)"
                   icon="groups"
                   color="secondary"
                   ><q-tooltip>View players</q-tooltip>
@@ -103,7 +103,27 @@
 
   <q-dialog v-model="players.show" position="top">
     <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
-      <div v-text="players.data"></div>
+      <strong>Players</strong>
+      <q-table
+        dense
+        flat
+        :rows="players.data"
+        row-key="id"
+        :columns="playersTable.columns"
+        v-model:pagination="playersTable.pagination"
+      >
+        <template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              v-text="col.label"
+            ></q-th>
+            <q-th auto-width></q-th>
+          </q-tr>
+        </template>
+      </q-table>
     </q-card>
   </q-dialog>
 
@@ -198,24 +218,27 @@
             ></q-input>
           </div>
           <div class="col">
-          <q-select
-          class="q-pl-xs"
-          filled
-          dense
-          v-model="formDialogNumbers.data.odds"
-          :options="[
+            <q-select
+              class="q-pl-xs"
+              filled
+              dense
+              v-model="formDialogNumbers.data.odds"
+              :options="[
           { label: '10-1', value: 10 },
           { label: '100-1', value: 100 },
           { label: '1000-1', value: 1000 },
           { label: '10000-1', value: 10000 }
         ]"
-          label="Odds"
-          emit-value
-          map-options
-        >
-          <q-tooltip>10 for (10-1, calculate last 2 digits from block), etc</q-tooltip>
-        </q-select>
-      </div>
+              label="Odds"
+              emit-value
+              map-options
+            >
+              <q-tooltip
+                >10 for (10-1, calculate last 2 digits from block),
+                etc</q-tooltip
+              >
+            </q-select>
+          </div>
           <div class="col">
             <q-input
               class="q-pl-xs"

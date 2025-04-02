@@ -3,7 +3,7 @@
   class="fixed-center q-pa-xl"
   :style="{ width: $q.screen.lt.sm ? '100%' : '600px' }"
 >
-  <q-card-section class="q-pa-none" v-if="!completed">
+  <q-card-section class="q-pa-none" v-if="!numbers.completed">
     <center>
       <h3 class="q-my-none q-mb-xl"><span v-text="numbers.name"></span></h3>
     </center>
@@ -32,14 +32,13 @@
       <div class="col-auto">
         <q-badge outline size="xl" color="secondary">
           <div class="text-subtitle1">
-            Odds: <span v-text="odds"></span>-1
+            Odds: <span v-text="numbers.odds"></span>-1
           </div>
         </q-badge>
       </div>
       <div class="col-auto">
-
         <q-badge @click="algorithm = true" outline size="xl" color="secondary">
-          <div class="text-subtitle1 cursor-pointer	">
+          <div class="text-subtitle1 cursor-pointer">
             Provably fair algorithm
           </div>
         </q-badge>
@@ -49,33 +48,28 @@
     <q-form @submit="joinGame" class="q-gutter-md">
       <div class="row justify-center q-gutter-md">
         <div class="col-2">
-      <q-input
-      label="Bet amount"
-      type="number"
-      v-model="amount"
-      required
-    ><q-tooltip>amount sats to bet</q-tooltip></q-input>
-    </div>
-    <div class="col-2">
-    <q-input
-    label="Number"
-    v-model="number"
-    lazy-rules
-    :rules="[val => val >= 0 || 'Number must be greater than 0', val => val < odds || 'Number must be less than ' + odds]"
-    type="number"
-    required
-  ><q-tooltip>number to bet on (between 0 and <span v-text="odds - 1"></span>)</q-tooltip></q-input>
-</div>
-<div class="col-6">
-
-      <q-input
-        label="Your LNadress"
-        type="text"
-        v-model="lnaddress"
-        required
-      ><q-tooltip>your lightning address</q-tooltip></q-input>
-    </div>
-  </div>
+          <q-input label="Bet amount" type="number" v-model="amount" required
+            ><q-tooltip>amount sats to bet</q-tooltip></q-input
+          >
+        </div>
+        <div class="col-2">
+          <q-input label="Number" v-model="number" type="number" required
+            ><q-tooltip
+              >number to bet on (between 0 and
+              <span v-text="numbers.odds - 1"></span>)</q-tooltip
+            ></q-input
+          >
+        </div>
+        <div class="col-6">
+          <q-input
+            label="Your LNadress"
+            type="text"
+            v-model="lnaddress"
+            required
+            ><q-tooltip>your lightning address</q-tooltip></q-input
+          >
+        </div>
+      </div>
       <q-btn outline class="q-mt-lg" type="submit">Join numbers game</q-btn>
       <q-btn
         class="q-ml-lg q-mt-md"
@@ -95,8 +89,11 @@
         icon="help"
         :color="($q.dark.isActive) ? 'grey-7' : 'grey-5'"
         ><q-tooltip
-          >This is a provably fair numbers game.<br />Instead of a number in the paper it uses bitcoin blocks. <br />Pick your number, the amount of sats to bet and your LNaddress and pay the
-          invoice to join. <br />On the closing date the last block hash will be used to determine the winning number.
+          >This is a provably fair numbers game. <br /><br />Instead of the
+          number oracle being sourced from something like a newspaper it uses
+          bitcoin blocks. <br />Pick your number, the amount of sats to bet and
+          your LNaddress and pay the invoice to join. <br />On the closing date
+          the last block hash will be used to determine the winning number.
           <br />(minus the registration fee)</q-tooltip
         ></q-btn
       >
@@ -106,9 +103,12 @@
   <q-card-section v-else class="q-pa-none">
     <center>
       <h2 class="q-my-none">Game Complete</h2>
-      <h5 class="q-my-none">Block:<span v-text="block_height"></span>
-        ,Number:<span v-text="height_number">
-      </span></h5>
+      <strong class="q-my-none">
+        Block:<span v-text="block_height"></span>
+      </strong>
+      <strong class="q-my-none">
+        Winning Number:<span v-text="height_number"></span>
+      </strong>
       <q-icon color="teal" name="check" size="30em"></q-icon>
     </center>
   </q-card-section>
@@ -134,10 +134,12 @@
 <q-dialog v-model="algorithm" position="top">
   <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
     <code>
-      block_hash = (from last block <span v-text="numbers.closing_date"></span>)<br>
-      tail_hex = block_hash[-4:] <br>
-      tail_decimal = int(tail_hex, 16)<br>
-      height_number = tail_decimal % <span v-text="odds"></span> (odds being <span v-text="odds"></span>-1)<br>
+      block_hash = (from last block
+      <span v-text="numbers.closing_date"></span>)<br />
+      tail_hex = block_hash[-6:] <br />
+      tail_decimal = int(tail_hex, 16)<br />
+      height_number = tail_decimal % <span v-text="numbers.odds"></span> (odds
+      being <span v-text="numbers.odds"></span>-1)<br />
     </code>
   </q-card>
 </q-dialog>
@@ -158,20 +160,10 @@
     mixins: [windowMixin],
     data() {
       return {
+        game_id: '{{game_id}}',
         algorithm: false,
         gameComplete: false,
-        game_id: '{{ game_id }}',
-        completed: '{{ completed }}' == 'True' ? true : false,
-        block_height: '{{ block_height }}',
-        height_number: '{{ height_number }}',
-        odds: '{{ odds }}',
-        pot: parseFloat('{{ pot }}').toFixed(1),
         paymentTick: false,
-        numbers: {
-          name: '',
-          number_of_players: 0,
-          buy_in: 0
-        },
         numbers: {},
         lnaddress: '',
         number: 0,
@@ -184,16 +176,33 @@
       }
     },
     methods: {
+      async getGame() {
+        try {
+          const response = await LNbits.api.request(
+            'GET',
+            `/numbers/api/v1/${this.game_id}`
+          )
+          this.numbers = response.data
+          this.numbers.closing_date = Quasar.date.formatDate(
+            new Date(this.numbers.closing_date),
+            'YYYY-MM-DD HH:mm'
+          )
+          console.log(this.numbers)
+        } catch (error) {
+          LNbits.utils.notifyApiError(error)
+        }
+      },
       async joinGame() {
         try {
           const data = {
             game_id: this.game_id,
-            settings_id: this.numbersPageId,
-            ln_address: this.lnaddress
+            buy_in: this.amount,
+            ln_address: this.lnaddress,
+            height_number: this.number
           }
           const response = await LNbits.api.request(
             'POST',
-            '/numbers/api/v1/numbers/join/',
+            '/numbers/api/v1/join',
             '',
             data
           )
@@ -249,20 +258,7 @@
       }
     },
     async mounted() {
-      try {
-        const response = await LNbits.api.request(
-          'GET',
-          `/numbers/api/v1/numbers/${this.game_id}`
-        )
-        this.numbers = response.data
-        this.numbers.closing_date = Quasar.date.formatDate(
-    new Date(this.numbers.closing_date),
-    'YYYY-MM-DD HH:mm'
-  )
-        this.activeGame = true
-      } catch (error) {
-        LNbits.utils.notifyApiError(error)
-      }
+      await this.getGame()
     }
   })
 </script>

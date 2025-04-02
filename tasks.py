@@ -4,13 +4,14 @@ import random
 from lnbits.core.models import Payment
 from lnbits.tasks import register_invoice_listener
 from loguru import logger
-from .models import Player
+
 from .crud import (
+    create_player,
     get_all_pending_games,
     get_game,
-    create_player,
 )
 from .helpers import calculate_winners
+from .models import Player
 
 
 async def wait_for_paid_invoices():
@@ -27,6 +28,7 @@ async def run_by_the_minute_task():
     while True:
         try:
             games = await get_all_pending_games()
+            logger.debug("checking numbers games that have finished...")
             for game in games:
                 await calculate_winners(game)
         except Exception as ex:
@@ -38,6 +40,7 @@ async def run_by_the_minute_task():
 
 async def on_invoice_paid(payment: Payment) -> None:
     if payment.extra.get("tag") == "numbers":
+        logger.debug(payment)
         ln_address = payment.extra["ln_address"]
         game_id = payment.extra["game_id"]
         height_number = payment.extra["height_number"]
@@ -46,5 +49,10 @@ async def on_invoice_paid(payment: Payment) -> None:
         if not game:
             return
         # add player
-        player = Player(game_id=game_id, ln_address=ln_address, height_number=height_number, buy_in=payment.amount_msat)
+        player = Player(
+            game_id=game_id,
+            ln_address=ln_address,
+            height_number=height_number,
+            buy_in=int(payment.amount / 1000),
+        )
         await create_player(player)

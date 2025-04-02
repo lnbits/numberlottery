@@ -6,12 +6,13 @@ from lnbits.core.crud import get_user
 from lnbits.core.models import WalletTypeInfo
 from lnbits.core.services import create_invoice
 from lnbits.decorators import require_admin_key
-from loguru import logger
 from starlette.exceptions import HTTPException
 
 from .crud import (
     create_game,
     delete_game,
+    delete_players,
+    get_all_players,
     get_game,
     get_games_by_user,
 )
@@ -20,15 +21,22 @@ from .models import Game, Player
 
 numbers_api_router = APIRouter()
 
+#### GAMES ####
 
-@numbers_api_router.post("/api/v1/numbers", status_code=HTTPStatus.OK)
-async def api_create_numbers(
+
+@numbers_api_router.post("/api/v1", status_code=HTTPStatus.OK)
+async def api_create_game(
     data: Game, key_info: WalletTypeInfo = Depends(require_admin_key)
 ):
     if data.haircut < 0 or data.haircut > 50:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Haircut must be between 0 and 50",
+        )
+    if data.odds > 10000000:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Odds too high: 10,000,000-1 max",
         )
     data.wallet = key_info.wallet.id
     data.user = key_info.wallet.user
@@ -40,8 +48,18 @@ async def api_create_numbers(
     return game
 
 
-@numbers_api_router.get("/api/v1/numbers")
-async def api_get_game(
+@numbers_api_router.get("/api/v1/{game_id}", status_code=HTTPStatus.OK)
+async def api_get_game(game_id: str):
+    game = await get_game(game_id)
+    if not game:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Numbers game does not exist."
+        )
+    return game
+
+
+@numbers_api_router.get("/api/v1")
+async def api_get_games(
     key_info: WalletTypeInfo = Depends(require_admin_key),
 ):
     user = await get_user(key_info.wallet.user)
@@ -50,45 +68,11 @@ async def api_get_game(
             status_code=HTTPStatus.BAD_REQUEST, detail="Failed to get user"
         )
     games = await get_games_by_user(user.id)
-    logger.debug(games)
     return games
 
 
-@numbers_api_router.post("/api/v1/numbers/join/", status_code=HTTPStatus.OK)
-async def api_join_numbers(data: Player):
-    numbers_game = await get_game(data.game_id)
-    logger.debug(numbers_game)
-    if not numbers_game:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="No game found")
-    if numbers_game.completed:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="Game already ended"
-        )
-    if numbers_game.closing_date.timestamp() - (30 * 60) < datetime.now().timestamp():
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="Game closing within 30mins, no more entries"
-        )
-    pay_req = await get_pr(data.ln_address, numbers_game.buy_in)
-    if not pay_req:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="lnaddress check failed"
-        )
-    payment = await create_invoice(
-        wallet_id=numbers_game.wallet,
-        amount=numbers_game.buy_in,
-        memo=f"Numbers {numbers_game.name} for {data.ln_address}",
-        extra={
-            "tag": "numbers",
-            "ln_address": data.ln_address,
-            "game_id": data.game_id,
-            "height_number": data.height_number,
-        },
-    )
-    return {"payment_hash": payment.payment_hash, "payment_request": payment.bolt11}
-
-
-@numbers_api_router.delete("/api/v1/numbers/{game_id}")
-async def api_numbers_delete(
+@numbers_api_router.delete("/api/v1/{game_id}")
+async def api_delete_game(
     game_id: str,
     key_info: WalletTypeInfo = Depends(require_admin_key),
 ):
@@ -102,26 +86,77 @@ async def api_numbers_delete(
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN, detail="Not your pay link."
         )
-
+    await delete_players(game_id)
     await delete_game(game_id)
 
 
-@numbers_api_router.get(
-    "/api/v1/numbers/{game_id}", status_code=HTTPStatus.OK
-)
-async def api_get_game(game_id: str):
-    numbers = await get_game(game_id)
-    if not numbers:
+#### PLAYERS ####
+
+
+@numbers_api_router.post("/api/v1/join", status_code=HTTPStatus.OK)
+async def api_create_player(data: Player):
+    game = await get_game(data.game_id)
+    if not game:
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="No game found")
+    if game.completed:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail="Game already ended"
+        )
+    if game.closing_date.timestamp() - (30 * 60) < datetime.now().timestamp():
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Game closing within 30mins, no more entries",
+        )
+    if data.buy_in > game.buy_in_max:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Buy in amount too high",
+        )
+    if data.height_number < 1 or data.height_number > (game.odds - 1):
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Number out of range",
+        )
+    pay_req = await get_pr(data.ln_address, data.buy_in)
+    if not pay_req:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail="lnaddress check failed"
+        )
+    try:
+        payment = await create_invoice(
+            wallet_id=game.wallet,
+            amount=data.buy_in,
+            memo=f"Numbers {game.name} for {data.ln_address}",
+            extra={
+                "tag": "numbers",
+                "ln_address": data.ln_address,
+                "game_id": data.game_id,
+                "height_number": data.height_number,
+            },
+        )
+        return {"payment_hash": payment.payment_hash, "payment_request": payment.bolt11}
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail=f"Failed to create invoice: {e}"
+        ) from e
+
+
+@numbers_api_router.get("/api/v1/players/{game_id}")
+async def api_get_players(
+    game_id: str,
+    key_info: WalletTypeInfo = Depends(require_admin_key),
+):
+    user = await get_user(key_info.wallet.user)
+    if not user:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail="Failed to get user"
+        )
+    game = await get_game(game_id)
+    if not game:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Numbers game does not exist."
         )
-    if numbers.closing_date.timestamp() < datetime.now().timestamp():
-        numbers.completed = True
-    return Game(
-        id=numbers.id,
-        name=numbers.name,
-        closing_date=numbers.closing_date,
-        buy_in_max=numbers.buy_in_max,
-        haircut=numbers.haircut,
-        completed=numbers.completed,
-    )
+    if game.user != user.id:
+        raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Not your game.")
+    players = await get_all_players(game_id)
+    return players

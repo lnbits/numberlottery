@@ -21,6 +21,7 @@ async def m001_add_numbers(db):
         """
     )
 
+
 async def m001_add_players(db):
     """
     Creates a hash check table.
