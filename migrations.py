@@ -1,6 +1,6 @@
 async def m001_add_numbers(db):
     """
-    Creates a hash check table.
+    Creates games table.
     """
     await db.execute(
         f"""
@@ -22,9 +22,9 @@ async def m001_add_numbers(db):
     )
 
 
-async def m001_add_players(db):
+async def m002_add_players(db):
     """
-    Creates a hash check table.
+    Creates players table.
     """
     await db.execute(
         f"""
@@ -39,4 +39,13 @@ async def m001_add_players(db):
             created_at TIMESTAMP NOT NULL DEFAULT {db.timestamp_now}
         );
         """
+    )
+
+
+async def m003_add_mempool_to_games(db):
+    """
+    Add mempool.space link to games db
+    """
+    await db.execute(
+        "ALTER TABLE numbers.games ADD COLUMN mempool TEXT DEFAULT 'https://mempool.space';"
     )

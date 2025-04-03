@@ -102,7 +102,7 @@
   </div>
 
   <q-dialog v-model="players.show" position="top">
-    <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
+    <q-card class="q-pa-lg q-pt-xl">
       <strong>Players</strong>
       <q-table
         dense
@@ -253,6 +253,21 @@
             ></q-input>
           </div>
         </div>
+        <q-expansion-item
+          group="extras"
+          icon="settings"
+          label="mempool.space link"
+          :content-inset-level="0.2"
+        >
+          <strong>Use your own or custom mempool.space link</strong>
+          <q-input
+            filled
+            dense
+            v-model.trim="formDialogNumbers.data.mempool"
+            type="text"
+            label="Link *"
+          ></q-input>
+        </q-expansion-item>
         <div>
           <q-btn
             unelevated

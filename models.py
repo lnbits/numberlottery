@@ -16,11 +16,23 @@ class Game(BaseModel):
     odds: int = 0
     completed: bool = False
     block_height: str = ""
+    mempool: str = "https://mempool.space"
     height_number: int = 0
     created_at: datetime = datetime.now(timezone.utc)
 
     class Config:
         extra = "allow"
+
+
+class PublicGame(BaseModel):
+    name: Optional[str] = None
+    closing_date: datetime
+    buy_in_max: int = 0
+    haircut: int = 0
+    odds: int = 0
+    completed: bool = False
+    block_height: str = ""
+    height_number: int = 0
 
 
 class Player(BaseModel):

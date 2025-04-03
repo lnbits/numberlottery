@@ -86,7 +86,8 @@ window.app = Vue.createApp({
           name: '',
           number_of_players: 2,
           buy_in: 1000,
-          wallet: null
+          wallet: null,
+          mempool: 'https://mempool.space'
         }
       }
     }

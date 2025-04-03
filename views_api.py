@@ -17,7 +17,7 @@ from .crud import (
     get_games_by_user,
 )
 from .helpers import get_pr
-from .models import Game, Player
+from .models import Game, Player, PublicGame
 
 numbers_api_router = APIRouter()
 
@@ -55,13 +55,14 @@ async def api_create_game(
 
 
 @numbers_api_router.get("/api/v1/{game_id}", status_code=HTTPStatus.OK)
-async def api_get_game(game_id: str):
+async def api_get_public_game(game_id: str):
     game = await get_game(game_id)
     if not game:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Numbers game does not exist."
         )
-    return game
+    public_game = PublicGame(**game.dict())
+    return public_game
 
 
 @numbers_api_router.get("/api/v1")

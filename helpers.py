@@ -28,9 +28,9 @@ async def get_pr(ln_address, amount):
         return None
 
 
-async def get_latest_block():
+async def get_latest_block(mempool: str):
     async with httpx.AsyncClient() as client:
-        response = await client.get("https://mempool.space/api/blocks")
+        response = await client.get(f"{mempool}/api/blocks")
         assert response.status_code == 200
         return response.json()[0]
     return None
@@ -52,7 +52,7 @@ async def calculate_winners(game):
         game.completed = True
         await update_game(game)
         return
-    block = await get_latest_block()
+    block = await get_latest_block(game.mempool)
     if not block:
         return
     # buffer to stop cheating
