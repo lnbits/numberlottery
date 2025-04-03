@@ -191,8 +191,6 @@
             `/numbers/api/v1/${this.game_id}`
           )
           this.numbers = response.data
-          console.log(new Date(this.numbers.closing_date).getTime())
-          console.log(Date.now())
           if (
             new Date(this.numbers.closing_date).getTime() / 1000 - 30 * 60 <
             Date.now() / 1000
@@ -203,7 +201,6 @@
             new Date(this.numbers.closing_date),
             'YYYY-MM-DD HH:mm'
           )
-          console.log(this.numbers)
         } catch (error) {
           LNbits.utils.notifyApiError(error)
         }

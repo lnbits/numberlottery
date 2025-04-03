@@ -40,7 +40,6 @@ async def run_by_the_minute_task():
 
 async def on_invoice_paid(payment: Payment) -> None:
     if payment.extra.get("tag") == "numbers":
-        logger.debug(payment)
         ln_address = payment.extra["ln_address"]
         game_id = payment.extra["game_id"]
         height_number = payment.extra["height_number"]

@@ -38,6 +38,12 @@ async def api_create_game(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Odds too high: 10,000,000-1 max",
         )
+    if data.closing_date.timestamp() - (30 * 60) < datetime.now().timestamp():
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="To avoid cheating, games close bets 30mins before the closing"
+            "date. So your game must close at least 30mins before the closing date.",
+        )
     data.wallet = key_info.wallet.id
     data.user = key_info.wallet.user
     game = await create_game(data)
