@@ -72,7 +72,8 @@ window.app = Vue.createApp({
             label: 'Number',
             field: 'height_number'
           },
-          {name: 'owed', align: 'left', label: 'Owed', field: 'owed'}
+          {name: 'owed', align: 'left', label: 'Owed', field: 'owed'},
+          {name: 'paid', align: 'left', label: 'Paid', field: 'paid'}
         ],
         pagination: {
           rowsPerPage: 10

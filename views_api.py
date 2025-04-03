@@ -105,14 +105,14 @@ async def api_create_player(data: Player):
     if game.closing_date.timestamp() - (30 * 60) < datetime.now().timestamp():
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail="Game closing within 30mins, no more entries",
+            detail="Game closing within 30mins, no more bets!",
         )
     if data.buy_in > game.buy_in_max:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Buy in amount too high",
         )
-    if data.height_number < 1 or data.height_number > (game.odds - 1):
+    if data.height_number < 0 or data.height_number > (game.odds - 1):
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Number out of range",

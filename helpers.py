@@ -4,7 +4,12 @@ import httpx
 from lnbits.core.services import pay_invoice
 from lnbits.core.views.api import api_lnurlscan
 
-from .crud import get_all_unpaid_players, update_game, update_player
+from .crud import (
+    get_all_unpaid_players,
+    get_all_unpaid_players_with_winning_number,
+    update_game,
+    update_player,
+)
 
 
 async def get_pr(ln_address, amount):
@@ -25,13 +30,13 @@ async def get_pr(ln_address, amount):
 
 async def get_latest_block():
     async with httpx.AsyncClient() as client:
-        blocks = await client.get("https://mempool.space/api/blocks").json()
-        assert blocks.status_code == 200
-        return blocks[0]
+        response = await client.get("https://mempool.space/api/blocks")
+        assert response.status_code == 200
+        return response.json()[0]
     return None
 
 
-def get_game_game_winner(block_hash: str, odds: int) -> int:
+def get_game_winner(block_hash: str, odds: int) -> int:
     tail_hex = block_hash[-6:]
     tail_decimal = int(tail_hex, 16)
     return tail_decimal % odds
@@ -60,11 +65,15 @@ async def calculate_winners(game):
         return
     # get the winning number
     game.block_height = block["id"]
-    game.height_number = get_game_game_winner(block["id"], game.odds)
-    players = await get_all_unpaid_players(game.id)
+    game.height_number = get_game_winner(block["id"], game.odds)
+    winning_players = await get_all_unpaid_players_with_winning_number(
+        game.id, game.height_number
+    )
     # pay all the winning players
-    for player in players:
-        max_sat = (player.buy_in * game.odds) * (game.haircut / 100)
+    for player in winning_players:
+        max_sat = (player.buy_in * game.odds) - (player.buy_in * game.odds) * (
+            game.haircut / 100
+        )
         pr = await get_pr(player.ln_address, max_sat)
         try:
             await pay_invoice(

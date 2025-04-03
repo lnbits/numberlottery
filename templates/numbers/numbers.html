@@ -46,7 +46,14 @@
     </div>
 
     <q-form @submit="joinGame" class="q-gutter-md">
-      <div class="row justify-center q-gutter-md">
+      <center v-if="closing" class="q-pt-lg">
+        <q-badge outline size="xl" color="white">
+          <div class="text-subtitle1">
+            Game Closing within 30mins, no more bets!
+          </div>
+        </q-badge>
+      </center>
+      <div v-else class="row justify-center q-gutter-md">
         <div class="col-2">
           <q-input label="Bet amount" type="number" v-model="amount" required
             ><q-tooltip>amount sats to bet</q-tooltip></q-input
@@ -103,11 +110,11 @@
   <q-card-section v-else class="q-pa-none">
     <center>
       <h2 class="q-my-none">Game Complete</h2>
+      <h4 class="q-my-none">
+        Winning Number:<span v-text="numbers.height_number"></span>
+      </h4>
       <strong class="q-my-none">
-        Block:<span v-text="block_height"></span>
-      </strong>
-      <strong class="q-my-none">
-        Winning Number:<span v-text="height_number"></span>
+        Block:<span v-text="numbers.block_height"></span>
       </strong>
       <q-icon color="teal" name="check" size="30em"></q-icon>
     </center>
@@ -164,6 +171,7 @@
         algorithm: false,
         gameComplete: false,
         paymentTick: false,
+        closing: false,
         numbers: {},
         lnaddress: '',
         number: 0,
@@ -183,6 +191,14 @@
             `/numbers/api/v1/${this.game_id}`
           )
           this.numbers = response.data
+          console.log(new Date(this.numbers.closing_date).getTime())
+          console.log(Date.now())
+          if (
+            new Date(this.numbers.closing_date).getTime() / 1000 - 30 * 60 <
+            Date.now() / 1000
+          ) {
+            this.closing = true
+          }
           this.numbers.closing_date = Quasar.date.formatDate(
             new Date(this.numbers.closing_date),
             'YYYY-MM-DD HH:mm'
