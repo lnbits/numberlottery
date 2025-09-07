@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 
 import httpx
-from lnbits.core.services import pay_invoice
-from lnbits.core.views.api import api_lnurlscan
+from lnbits.core.services import get_pr_from_lnurl, pay_invoice
 
 from .crud import (
     get_all_unpaid_players,
@@ -10,22 +9,6 @@ from .crud import (
     update_game,
     update_player,
 )
-
-
-async def get_pr(ln_address, amount):
-    data = await api_lnurlscan(ln_address)
-    if data.get("status") == "ERROR":
-        return
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                url=f"{data['callback']}?amount={int(amount)* 1000}"
-            )
-            if response.status_code != 200:
-                return
-            return response.json()["pr"]
-    except Exception:
-        return None
 
 
 async def get_latest_block(mempool: str):
@@ -74,7 +57,7 @@ async def calculate_winners(game):
         max_sat = (player.buy_in * game.odds) - (player.buy_in * game.odds) * (
             game.haircut / 100
         )
-        pr = await get_pr(player.ln_address, max_sat)
+        pr = await get_pr_from_lnurl(player.ln_address, int(max_sat * 1000))
         try:
             await pay_invoice(
                 wallet_id=game.wallet,

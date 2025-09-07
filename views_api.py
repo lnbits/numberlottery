@@ -6,6 +6,8 @@ from lnbits.core.crud import get_user
 from lnbits.core.models import WalletTypeInfo
 from lnbits.core.services import create_invoice
 from lnbits.decorators import require_admin_key
+from lnurl import LnurlPayResponse
+from lnurl import handle as lnurl_handle
 from starlette.exceptions import HTTPException
 
 from .crud import (
@@ -16,7 +18,6 @@ from .crud import (
     get_game,
     get_games_by_user,
 )
-from .helpers import get_pr
 from .models import Game, Player, PublicGame
 
 numbers_api_router = APIRouter()
@@ -124,12 +125,19 @@ async def api_create_player(data: Player):
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Number out of range",
         )
-    pay_req = await get_pr(data.ln_address, data.buy_in)
-    if not pay_req:
+    try:
+        res = await lnurl_handle(data.ln_address)
+    except Exception as exc:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail="lnaddress check failed"
+            status_code=HTTPStatus.BAD_REQUEST, detail=f"lnaddress error: {exc!s}"
+        ) from exc
+    if not isinstance(res, LnurlPayResponse):
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="lnaddress return wrong response type",
         )
     try:
+        assert game.wallet
         payment = await create_invoice(
             wallet_id=game.wallet,
             amount=data.buy_in,

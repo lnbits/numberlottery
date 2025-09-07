@@ -163,46 +163,46 @@
 {% endblock %} {% block scripts %}
 <script>
   window.app = Vue.createApp({
-    el: '#vue',
+    el: "#vue",
     mixins: [windowMixin],
     data() {
       return {
-        game_id: '{{game_id}}',
+        game_id: "{{game_id}}",
         algorithm: false,
         gameComplete: false,
         paymentTick: false,
         closing: false,
         numbers: {},
-        lnaddress: '',
+        lnaddress: "",
         number: 0,
         amount: 0,
         qr: {
           show: false,
-          payment_request: '',
-          payment_hash: ''
-        }
-      }
+          payment_request: "",
+          payment_hash: "",
+        },
+      };
     },
     methods: {
       async getGame() {
         try {
           const response = await LNbits.api.request(
-            'GET',
-            `/numbers/api/v1/${this.game_id}`
-          )
-          this.numbers = response.data
+            "GET",
+            `/numbers/api/v1/${this.game_id}`,
+          );
+          this.numbers = response.data;
           if (
             new Date(this.numbers.closing_date).getTime() / 1000 - 30 * 60 <
             Date.now() / 1000
           ) {
-            this.closing = true
+            this.closing = true;
           }
           this.numbers.closing_date = Quasar.date.formatDate(
             new Date(this.numbers.closing_date),
-            'YYYY-MM-DD HH:mm'
-          )
+            "YYYY-MM-DD HH:mm",
+          );
         } catch (error) {
-          LNbits.utils.notifyApiError(error)
+          LNbits.utils.notifyApiError(error);
         }
       },
       async joinGame() {
@@ -211,68 +211,68 @@
             game_id: this.game_id,
             buy_in: this.amount,
             ln_address: this.lnaddress,
-            height_number: this.number
-          }
+            height_number: this.number,
+          };
           const response = await LNbits.api.request(
-            'POST',
-            '/numbers/api/v1/join',
-            '',
-            data
-          )
+            "POST",
+            "/numbers/api/v1/join",
+            "",
+            data,
+          );
           if (response.data) {
-            this.qr.payment_request = response.data.payment_request
-            this.qr.payment_hash = response.data.payment_hash
-            this.qr.show = true
-            this.websocket()
+            this.qr.payment_request = response.data.payment_request;
+            this.qr.payment_hash = response.data.payment_hash;
+            this.qr.show = true;
+            this.websocket();
           }
         } catch (error) {
-          LNbits.utils.notifyApiError(error)
+          LNbits.utils.notifyApiError(error);
         }
       },
       websocket() {
-        const url = new URL(window.location)
-        url.protocol = url.protocol === 'https:' ? 'wss' : 'ws'
-        url.pathname = `/api/v1/ws/${this.qr.payment_hash}`
-        const ws = new WebSocket(url)
-        ws.addEventListener('message', async ({data}) => {
-          data = JSON.parse(data)
-          if (data['pending'] == false) {
+        const url = new URL(window.location);
+        url.protocol = url.protocol === "https:" ? "wss" : "ws";
+        url.pathname = `/api/v1/ws/${this.qr.payment_hash}`;
+        const ws = new WebSocket(url);
+        ws.addEventListener("message", async ({ data }) => {
+          data = JSON.parse(data);
+          if (data["pending"] == false) {
             this.$q.notify({
-              type: 'positive',
-              message: 'Invoice paid, you joined the game!'
-            })
-            this.qr.show = false
-            this.paymentTick = true
+              type: "positive",
+              message: "Invoice paid, you joined the game!",
+            });
+            this.qr.show = false;
+            this.paymentTick = true;
             this.pot = (
               parseFloat(this.pot) +
               (this.numbers.buy_in -
                 this.numbers.buy_in * (parseFloat(this.numbers.haircut) / 100))
-            ).toFixed(1)
-            this.lnaddress = ''
-            ws.close()
+            ).toFixed(1);
+            this.lnaddress = "";
+            ws.close();
           }
-        })
+        });
       },
       copyText() {
         Quasar.copyToClipboard(window.location.href).then(() => {
           Quasar.Notify.create({
-            message: 'Copied numbers link to clipboard!',
-            position: 'bottom'
-          })
-        })
+            message: "Copied numbers link to clipboard!",
+            position: "bottom",
+          });
+        });
       },
       copyInvoice() {
         Quasar.copyToClipboard(this.qr.payment_request).then(() => {
           Quasar.Notify.create({
-            message: 'Invoice URL copied to clipboard!',
-            position: 'bottom'
-          })
-        })
-      }
+            message: "Invoice URL copied to clipboard!",
+            position: "bottom",
+          });
+        });
+      },
     },
     async mounted() {
-      await this.getGame()
-    }
-  })
+      await this.getGame();
+    },
+  });
 </script>
 {% endblock %}
