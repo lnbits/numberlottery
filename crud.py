@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from lnbits.db import Database
 from lnbits.helpers import urlsafe_short_hash
@@ -31,7 +30,7 @@ async def get_game(game_id: str) -> Game:
     )
 
 
-async def get_games_by_user(user: str) -> List[Game]:
+async def get_games_by_user(user: str) -> list[Game]:
     return await db.fetchall(
         "SELECT * FROM numbers.games WHERE user = :user",
         {"user": user},
@@ -39,7 +38,7 @@ async def get_games_by_user(user: str) -> List[Game]:
     )
 
 
-async def get_all_pending_games() -> List[Game]:
+async def get_all_pending_games() -> list[Game]:
     query = (
         "SELECT * FROM numbers.games "
         "WHERE completed = :completed "
@@ -71,7 +70,7 @@ async def update_player(player: Player) -> Player:
     return player
 
 
-async def get_all_players(game_id: str) -> List[Player]:
+async def get_all_players(game_id: str) -> list[Player]:
     return await db.fetchall(
         "SELECT * FROM numbers.players WHERE game_id = :game_id",
         {"game_id": game_id},
@@ -79,7 +78,7 @@ async def get_all_players(game_id: str) -> List[Player]:
     )
 
 
-async def get_all_unpaid_players(game_id: str) -> List[Player]:
+async def get_all_unpaid_players(game_id: str) -> list[Player]:
     return await db.fetchall(
         "SELECT * FROM numbers.players WHERE game_id = :game_id AND paid = :paid",
         {"game_id": game_id, "paid": False},
@@ -89,7 +88,7 @@ async def get_all_unpaid_players(game_id: str) -> List[Player]:
 
 async def get_all_unpaid_players_with_winning_number(
     game_id: str, height_number: int
-) -> List[Player]:
+) -> list[Player]:
     query = (
         "SELECT * FROM numbers.players "
         "WHERE game_id = :game_id "
