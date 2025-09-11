@@ -1,15 +1,14 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from fastapi import Query
 from pydantic import BaseModel
 
 
 class Game(BaseModel):
-    id: Optional[str] = None
-    wallet: Optional[str] = None
-    user: Optional[str] = None
-    name: Optional[str] = None
+    id: str | None = None
+    wallet: str | None = None
+    user: str | None = None
+    name: str | None = None
     closing_date: datetime
     buy_in_max: int = 0
     haircut: int = 0
@@ -25,7 +24,7 @@ class Game(BaseModel):
 
 
 class PublicGame(BaseModel):
-    name: Optional[str] = None
+    name: str | None = None
     closing_date: datetime
     buy_in_max: int = 0
     haircut: int = 0
@@ -36,7 +35,7 @@ class PublicGame(BaseModel):
 
 
 class Player(BaseModel):
-    id: Optional[str] = None
+    id: str | None = None
     game_id: str = Query(None)
     height_number: int = 0
     buy_in: int = 0
