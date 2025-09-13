@@ -1,4 +1,5 @@
 {
+  "id": "numbers",
   "name": "Numbers",
   "version": "1.0.0",
   "short_description": "Block based numbers game",
