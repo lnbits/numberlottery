@@ -8,7 +8,7 @@ async def m001_add_numbers(db):
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             wallet TEXT NOT NULL,
-            user TEXT NOT NULL,
+            user_id TEXT NOT NULL,
             haircut INTEGER NOT NULL DEFAULT 5 CHECK(haircut <= 50),
             closing_date TIMESTAMP NOT NULL,
             buy_in_max INTEGER NOT NULL,

@@ -32,8 +32,8 @@ async def get_game(game_id: str) -> Game:
 
 async def get_games_by_user(user: str) -> list[Game]:
     return await db.fetchall(
-        "SELECT * FROM numbers.games WHERE user = :user",
-        {"user": user},
+        "SELECT * FROM numbers.games WHERE user_id = :user_id",
+        {"user_id": user},
         Game,
     )
 

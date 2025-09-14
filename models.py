@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class Game(BaseModel):
     id: str | None = None
     wallet: str | None = None
-    user: str | None = None
+    user_id: str | None = None
     name: str | None = None
     closing_date: datetime
     buy_in_max: int = 0

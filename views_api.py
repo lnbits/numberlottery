@@ -46,7 +46,7 @@ async def api_create_game(
             "date. So your game must close at least 30mins before the closing date.",
         )
     data.wallet = key_info.wallet.id
-    data.user = key_info.wallet.user
+    data.user_id = key_info.wallet.user
     game = await create_game(data)
     if not game:
         raise HTTPException(
@@ -171,7 +171,7 @@ async def api_get_players(
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Numbers game does not exist."
         )
-    if game.user != user.id:
+    if game.user_id != user.id:
         raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Not your game.")
     players = await get_all_players(game_id)
     return players
