@@ -39,16 +39,11 @@ async def get_games_by_user(user: str) -> list[Game]:
 
 
 async def get_all_pending_games() -> list[Game]:
-    query = (
-        "SELECT * FROM numbers.games "
-        "WHERE completed = :completed "
-        "AND closing_date < :closing_date"
+    return await db.fetchall(
+        f"SELECT * FROM numbers.games WHERE completed = :completed AND closing_date < {db.timestamp_now}",
+        {"completed": False},
+        Game,
     )
-    params = {
-        "completed": False,
-        "closing_date": datetime.now(timezone.utc),
-    }
-    return await db.fetchall(query, params, Game)
 
 
 async def delete_game(game_id: str) -> None:
