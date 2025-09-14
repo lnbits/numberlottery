@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from lnbits.db import Database
 from lnbits.helpers import urlsafe_short_hash
@@ -45,8 +45,8 @@ async def get_all_pending_games() -> list[Game]:
         "AND closing_date < :closing_date"
     )
     params = {
-        "completed": 0,
-        "closing_date": datetime.now(),
+        "completed": False,
+        "closing_date": datetime.now(timezone.utc),
     }
     return await db.fetchall(query, params, Game)
 
