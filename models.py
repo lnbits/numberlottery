@@ -28,6 +28,7 @@ class Game(BaseModel):
             return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
         return datetime.fromtimestamp(int(v), tz=timezone.utc)
 
+
 class PublicGame(BaseModel):
     name: str | None = None
     closing_date: datetime
@@ -43,6 +44,7 @@ class PublicGame(BaseModel):
         if isinstance(v, datetime):
             return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
         return datetime.fromtimestamp(int(v), tz=timezone.utc)
+
 
 class Player(BaseModel):
     id: str | None = None
