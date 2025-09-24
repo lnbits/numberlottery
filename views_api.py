@@ -120,7 +120,7 @@ async def api_create_player(data: Player):
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Buy in amount too high",
         )
-    if data.height_number < 0 or data.height_number > (game.odds - 1):
+    if data.block_number < 0 or data.block_number > (game.odds - 1):
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Number out of range",
@@ -146,7 +146,7 @@ async def api_create_player(data: Player):
                 "tag": "numbers",
                 "ln_address": data.ln_address,
                 "game_id": data.game_id,
-                "height_number": data.height_number,
+                "block_number": data.block_number,
             },
         )
         return {"payment_hash": payment.payment_hash, "payment_request": payment.bolt11}

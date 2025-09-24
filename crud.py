@@ -82,15 +82,15 @@ async def get_all_unpaid_players(game_id: str) -> list[Player]:
 
 
 async def get_all_unpaid_players_with_winning_number(
-    game_id: str, height_number: int
+    game_id: str, block_number: int
 ) -> list[Player]:
     query = (
         "SELECT * FROM numbers.players "
         "WHERE game_id = :game_id "
-        "AND height_number = :height_number "
+        "AND block_number = :block_number "
         "AND paid = :paid"
     )
-    params = {"game_id": game_id, "height_number": height_number, "paid": False}
+    params = {"game_id": game_id, "block_number": block_number, "paid": False}
     return await db.fetchall(query, params, Player)
 
 

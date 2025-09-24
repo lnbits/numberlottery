@@ -42,7 +42,7 @@ async def on_invoice_paid(payment: Payment) -> None:
     if payment.extra.get("tag") == "numbers":
         ln_address = payment.extra["ln_address"]
         game_id = payment.extra["game_id"]
-        height_number = payment.extra["height_number"]
+        block_number = payment.extra["block_number"]
         # fetch details
         game = await get_game(game_id)
         if not game:
@@ -51,7 +51,7 @@ async def on_invoice_paid(payment: Payment) -> None:
         player = Player(
             game_id=game_id,
             ln_address=ln_address,
-            height_number=height_number,
+            block_number=block_number,
             buy_in=int(payment.amount / 1000),
         )
         await create_player(player)

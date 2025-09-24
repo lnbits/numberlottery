@@ -111,10 +111,10 @@
     <center>
       <h2 class="q-my-none">Game Complete</h2>
       <h4 class="q-my-none">
-        Winning Number:<span v-text="numbers.height_number"></span>
+        Winning Number:<span v-text="numbers.block_number"></span>
       </h4>
       <strong class="q-my-none">
-        Block:<span v-text="numbers.block_height"></span>
+        Block:<span v-text="numbers.block_hash"></span>
       </strong>
       <q-icon color="teal" name="check" size="30em"></q-icon>
     </center>
@@ -145,7 +145,7 @@
       <span v-text="numbers.closing_date"></span>)<br />
       tail_hex = block_hash[-6:] <br />
       tail_decimal = int(tail_hex, 16)<br />
-      height_number = tail_decimal % <span v-text="numbers.odds"></span> (odds
+      block_number = tail_decimal % <span v-text="numbers.odds"></span> (odds
       being <span v-text="numbers.odds"></span>-1)<br />
     </code>
   </q-card>
@@ -211,7 +211,7 @@
             game_id: this.game_id,
             buy_in: this.amount,
             ln_address: this.lnaddress,
-            height_number: this.number
+            block_number: this.number
           }
           const response = await LNbits.api.request(
             'POST',

@@ -67,10 +67,10 @@ window.app = Vue.createApp({
           },
           {name: 'buy_in', align: 'left', label: 'Buy in', field: 'buy_in'},
           {
-            name: 'height_number',
+            name: 'block_number',
             align: 'left',
             label: 'Number',
-            field: 'height_number'
+            field: 'block_number'
           },
           {name: 'owed', align: 'left', label: 'Owed', field: 'owed'},
           {name: 'paid', align: 'left', label: 'Paid', field: 'paid'}

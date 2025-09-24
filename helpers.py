@@ -47,10 +47,10 @@ async def calculate_winners(game):
     ):
         return
     # get the winning number
-    game.block_height = block["id"]
-    game.height_number = get_game_winner(block["id"], game.odds)
+    game.block_hash = block["id"]
+    game.block_number = get_game_winner(block["id"], game.odds)
     winning_players = await get_all_unpaid_players_with_winning_number(
-        game.id, game.height_number
+        game.id, game.block_number
     )
     # pay all the winning players
     for player in winning_players:
