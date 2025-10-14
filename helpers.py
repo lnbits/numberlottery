@@ -72,6 +72,24 @@ async def calculate_winners(game):
             player.paid = False
             player.owed = max_sat
             await update_player(player)
+        await pay_tribute(game.haircut, game.wallet)
     game.completed = True
     await update_game(game)
+    return
+
+async def pay_tribute(haircut_amount: int, wallet_id: str) -> None:
+    try:
+        tribute = int(2 * (haircut_amount / 100))
+        try:
+            pr = await get_pr_from_lnurl("lnbits@nostr.com", tribute * 1000)
+        except Exception as exc:
+            return
+        await pay_invoice(
+            wallet_id=wallet_id,
+            payment_request=pr,
+            max_sat=tribute,
+            description="Tribute to help support LNbits",
+        )
+    except Exception:
+        pass
     return
