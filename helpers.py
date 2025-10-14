@@ -72,6 +72,7 @@ async def calculate_winners(game):
             player.paid = False
             player.owed = max_sat
             await update_player(player)
+        # Pay tribute to LNbits. You can remove, but that would be mean, LNbits devs need to keep the lights on.
         await pay_tribute(game.haircut, game.wallet)
     game.completed = True
     await update_game(game)
