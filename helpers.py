@@ -33,8 +33,6 @@ async def calculate_winners(game):
     players = await get_all_unpaid_players(game.id)
     if not players:
         game.completed = True
-        await update_game(game)
-        return
     block = await get_latest_block(game.mempool)
     if not block:
         return
