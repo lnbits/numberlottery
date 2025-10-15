@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import Query
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, validator
 
 
 class Game(BaseModel):
@@ -17,13 +16,13 @@ class Game(BaseModel):
     block_hash: str = ""
     mempool: str = "https://mempool.space"
     block_number: int = 0
-    created_at: datetime = datetime.now(timezone.utc)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Config:
         extra = "allow"
 
     @validator("closing_date", pre=True, always=True)
-    def force_utc(cls, v):
+    def force_utc(cls, v):  # noqa: N805
         if isinstance(v, datetime):
             return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
         return datetime.fromtimestamp(int(v), tz=timezone.utc)
@@ -40,7 +39,7 @@ class PublicGame(BaseModel):
     block_number: int = 0
 
     @validator("closing_date", pre=True, always=True)
-    def force_utc(cls, v):
+    def force_utc(cls, v):  # noqa: N805
         if isinstance(v, datetime):
             return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
         return datetime.fromtimestamp(int(v), tz=timezone.utc)
@@ -48,10 +47,10 @@ class PublicGame(BaseModel):
 
 class Player(BaseModel):
     id: str | None = None
-    game_id: str = Query(None)
+    game_id: str  # required: fixes mypy when passed to get_game(str)
     block_number: int = 0
     buy_in: int = 0
-    ln_address: str = Query(None)
+    ln_address: str  # required: avoids Optional[str] leakage
     paid: bool = False
     owed: int = 0
-    created_at: datetime = datetime.now(timezone.utc)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

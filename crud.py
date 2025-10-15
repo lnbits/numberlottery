@@ -1,4 +1,3 @@
-
 from lnbits.db import Database
 from lnbits.helpers import urlsafe_short_hash
 
@@ -39,8 +38,8 @@ async def get_games_by_user(user: str) -> list[Game]:
 
 async def get_all_pending_games() -> list[Game]:
     return await db.fetchall(
-        f"SELECT * FROM numbers.games WHERE completed = :completed AND closing_date < {db.timestamp_now}",
-        {"completed": False},
+        "SELECT * FROM numbers.games WHERE completed = :com AND closing_date < :tim",
+        {"com": False, "tim": db.timestamp_now},
         Game,
     )
 
