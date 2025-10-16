@@ -1,6 +1,6 @@
 {
   "id": "numberlottery",
-  "name": "Numbers",
+  "name": "Numberlottery",
   "version": "1.0.0",
   "short_description": "Block based numbers game",
   "tile": "/numberlottery/static/image/numbers.png",

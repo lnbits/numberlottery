@@ -21,7 +21,7 @@ async def index(request: Request, user: User = Depends(check_user_exists)):
 @numberlottery_generic_router.get("/{game_id}", response_class=HTMLResponse)
 async def display_numberlottery(request: Request, game_id: str):
     return numberlottery_renderer().TemplateResponse(
-        "numberlottery/numberlottery.html",
+        "numberlottery/numbers.html",
         {
             "game_id": game_id,
             "request": request,
