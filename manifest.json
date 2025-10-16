@@ -1,9 +1,9 @@
 {
   "repos": [
     {
-      "id": "numbers",
+      "id": "numberlottery",
       "organisation": "lnbits",
-      "repository": "numbers"
+      "repository": "numberlottery"
     }
   ]
 }
