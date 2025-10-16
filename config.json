@@ -1,9 +1,9 @@
 {
-  "id": "numbers",
+  "id": "numberlottery",
   "name": "Numbers",
   "version": "1.0.0",
   "short_description": "Block based numbers game",
-  "tile": "/numbers/static/image/numbers.png",
+  "tile": "/numberlottery/static/image/numbers.png",
   "min_lnbits_version": "1.3.0",
   "tags": ["gambling"],
   "contributors": [
@@ -14,7 +14,7 @@
     }
   ],
   "images": [],
-  "description_md": "https://raw.githubusercontent.com/lnbits/numbers/main/description.md",
-  "terms_and_conditions_md": "https://raw.githubusercontent.com/lnbits/numbers/main/toc.md",
+  "description_md": "https://raw.githubusercontent.com/lnbits/numberlottery/main/description.md",
+  "terms_and_conditions_md": "https://raw.githubusercontent.com/lnbits/numberlottery/main/toc.md",
   "license": "MIT"
 }
