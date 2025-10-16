@@ -20,12 +20,12 @@ from .crud import (
 )
 from .models import Game, Player, PublicGame
 
-numbers_api_router = APIRouter()
+numberlottery_api_router = APIRouter()
 
 #### GAMES ####
 
 
-@numbers_api_router.post("/api/v1", status_code=HTTPStatus.OK)
+@numberlottery_api_router.post("/api/v1", status_code=HTTPStatus.OK)
 async def api_create_game(
     data: Game, key_info: WalletTypeInfo = Depends(require_admin_key)
 ):
@@ -55,7 +55,7 @@ async def api_create_game(
     return game
 
 
-@numbers_api_router.get("/api/v1/{game_id}", status_code=HTTPStatus.OK)
+@numberlottery_api_router.get("/api/v1/{game_id}", status_code=HTTPStatus.OK)
 async def api_get_public_game(game_id: str):
     game = await get_game(game_id)
     if not game:
@@ -66,7 +66,7 @@ async def api_get_public_game(game_id: str):
     return public_game
 
 
-@numbers_api_router.get("/api/v1")
+@numberlottery_api_router.get("/api/v1")
 async def api_get_games(
     key_info: WalletTypeInfo = Depends(require_admin_key),
 ):
@@ -79,7 +79,7 @@ async def api_get_games(
     return games
 
 
-@numbers_api_router.delete("/api/v1/{game_id}")
+@numberlottery_api_router.delete("/api/v1/{game_id}")
 async def api_delete_game(
     game_id: str,
     key_info: WalletTypeInfo = Depends(require_admin_key),
@@ -101,7 +101,7 @@ async def api_delete_game(
 #### PLAYERS ####
 
 
-@numbers_api_router.post("/api/v1/join", status_code=HTTPStatus.OK)
+@numberlottery_api_router.post("/api/v1/join", status_code=HTTPStatus.OK)
 async def api_create_player(data: Player):
     game = await get_game(data.game_id)
     if not game:
@@ -143,7 +143,7 @@ async def api_create_player(data: Player):
             amount=data.buy_in,
             memo=f"Numbers {game.name} for {data.ln_address}",
             extra={
-                "tag": "numbers",
+                "tag": "numberlottery",
                 "ln_address": data.ln_address,
                 "game_id": data.game_id,
                 "block_number": data.block_number,
@@ -156,7 +156,7 @@ async def api_create_player(data: Player):
         ) from e
 
 
-@numbers_api_router.get("/api/v1/players/{game_id}")
+@numberlottery_api_router.get("/api/v1/players/{game_id}")
 async def api_get_players(
     game_id: str,
     key_info: WalletTypeInfo = Depends(require_admin_key),

@@ -187,7 +187,7 @@
         try {
           const response = await LNbits.api.request(
             'GET',
-            `/numbers/api/v1/${this.game_id}`
+            `/numberlottery/api/v1/${this.game_id}`
           )
           this.numbers = response.data
           if (
@@ -214,7 +214,7 @@
           }
           const response = await LNbits.api.request(
             'POST',
-            '/numbers/api/v1/join',
+            '/numberlottery/api/v1/join',
             '',
             data
           )
