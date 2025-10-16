@@ -95,7 +95,11 @@ window.app = Vue.createApp({
   methods: {
     async getGames() {
       await LNbits.api
-        .request('GET', '/numbers/api/v1', this.g.user.wallets[0].adminkey)
+        .request(
+          'GET',
+          '/numberlottery/api/v1',
+          this.g.user.wallets[0].adminkey
+        )
         .then(response => {
           if (response.data != null) {
             console.log(response.data)
@@ -112,7 +116,7 @@ window.app = Vue.createApp({
       await LNbits.api
         .request(
           'GET',
-          '/numbers/api/v1/players/' + game_id,
+          '/numberlottery/api/v1/players/' + game_id,
           this.g.user.wallets[0].adminkey
         )
         .then(response => {
@@ -143,7 +147,7 @@ window.app = Vue.createApp({
       try {
         const response = await LNbits.api.request(
           'POST',
-          '/numbers/api/v1',
+          '/numberlottery/api/v1',
           wallet.adminkey,
           data
         )
@@ -165,7 +169,7 @@ window.app = Vue.createApp({
           LNbits.api
             .request(
               'DELETE',
-              '/numbers/api/v1/' + game_id,
+              '/numberlottery/api/v1/' + game_id,
               _.findWhere(this.g.user.wallets, {id: game.wallet}).adminkey
             )
             .then(response => {

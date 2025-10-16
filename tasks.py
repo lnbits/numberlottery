@@ -16,7 +16,7 @@ from .models import Player
 
 async def wait_for_paid_invoices():
     invoice_queue = asyncio.Queue()
-    register_invoice_listener(invoice_queue, "ext_numbers")
+    register_invoice_listener(invoice_queue, "ext_numberlottery")
 
     while True:
         payment = await invoice_queue.get()
@@ -39,7 +39,7 @@ async def run_by_the_minute_task():
 
 
 async def on_invoice_paid(payment: Payment) -> None:
-    if payment.extra.get("tag") == "numbers":
+    if payment.extra.get("tag") == "numberlottery":
         ln_address = payment.extra["ln_address"]
         game_id = payment.extra["game_id"]
         block_number = payment.extra["block_number"]

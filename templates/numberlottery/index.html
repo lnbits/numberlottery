@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% from "macros.jinja" import window_vars with context
 %} {% block scripts %} {{ window_vars(user) }}
-<script src="{{ static_url_for('numbers/static', path='js/index.js') }}"></script>
+<script src="{{ static_url_for('numberlottery/static', path='js/index.js') }}"></script>
 {% endblock %} {% block page %}
 <div class="row q-col-gutter-md">
   <div class="col-12 col-md-7 q-gutter-y-md">
@@ -51,7 +51,7 @@
                   icon="launch"
                   :color="($q.dark.isActive) ? 'grey-7' : 'grey-5'"
                   type="a"
-                  :href="'/numbers/' + props.row.id"
+                  :href="'/numberlottery/' + props.row.id"
                   target="_blank"
                 ></q-btn>
               </q-td>
@@ -96,7 +96,7 @@
       </q-card-section>
       <q-card-section class="q-pa-none">
         <q-separator></q-separator>
-        <q-list> {% include "numbers/_api_docs.html" %} </q-list>
+        <q-list> {% include "numberlottery/_api_docs.html" %} </q-list>
       </q-card-section>
     </q-card>
   </div>

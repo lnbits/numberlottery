@@ -1,10 +1,10 @@
-async def m001_add_numbers(db):
+async def m001_add_numberlottery(db):
     """
     Creates games table.
     """
     await db.execute(
         f"""
-        CREATE TABLE numbers.games (
+        CREATE TABLE numberlottery.games (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             wallet TEXT NOT NULL,
@@ -28,7 +28,7 @@ async def m002_add_players(db):
     """
     await db.execute(
         f"""
-        CREATE TABLE numbers.players (
+        CREATE TABLE numberlottery.players (
             id TEXT PRIMARY KEY,
             game_id TEXT NOT NULL,
             block_number INTEGER NOT NULL,
@@ -47,5 +47,5 @@ async def m003_add_mempool_to_games(db):
     Add mempool.space link to games db
     """
     await db.execute(
-        "ALTER TABLE numbers.games ADD COLUMN mempool TEXT DEFAULT 'https://mempool.space';"
+        "ALTER TABLE numberlottery.games ADD COLUMN mempool TEXT DEFAULT 'https://mempool.space';"
     )
