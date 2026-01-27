@@ -12,7 +12,7 @@
 
 ## Bitcoin Numbers
 
-- A provably fair numbers game, powered by Bitcoin block data.
+A provably fair numbers game, powered by Bitcoin block data.
 
 Set a date/time, and at that time the latest bitcoin block hash will be fetched and a winning number calculated.
 
