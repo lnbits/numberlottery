@@ -1,10 +1,13 @@
-## Bitcoin Numbers
+A provably fair numbers game powered by Bitcoin block data.
 
-- A provably fair numbers game, powered by Bitcoin block data.
+Its functions include:
 
-Set a date/time, and at that time the latest bitcoin block hash will be fetched and a winning number calculated.
+- Setting draw dates tied to Bitcoin block hashes
+- Calculating winning numbers from blockchain data
+- Selling lottery tickets via Lightning payments
+- Providing transparent and verifiable results
 
-Risks: This game relies on block data from mempool.space, which means you're trusting them not to manipulate it. In theory, if the prize were large enough, miners might try to influence the outcome—but that would require a very LARGE jackpot to make it worthwhile.
+A provably fair lottery system that uses Bitcoin blockchain data to generate winning numbers, ensuring transparent and verifiable outcomes.
 
-Gambling is dangerous, gamble responsibly.
+Gambling is dangerous and can be addictive, gamble responsibly.
 https://www.gambleaware.org
