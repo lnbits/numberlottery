@@ -1,3 +1,5 @@
+from time import time
+
 from lnbits.db import Database
 from lnbits.helpers import urlsafe_short_hash
 
@@ -38,8 +40,11 @@ async def get_games_by_user(user: str) -> list[Game]:
 
 async def get_all_pending_games() -> list[Game]:
     return await db.fetchall(
-        "SELECT * FROM numberlottery.games WHERE completed = :c AND closing_date < :t",
-        {"c": False, "t": db.timestamp_now},
+        f"""
+        SELECT * FROM numberlottery.games WHERE completed = :c
+        AND closing_date < {db.timestamp_placeholder('now')}
+        """,
+        {"c": False, "now": time()},
         Game,
     )
 
