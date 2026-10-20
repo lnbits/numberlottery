@@ -62,7 +62,7 @@ async def api_get_public_game(game_id: str):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Numbers game does not exist."
         )
-    public_game = PublicGame(**game.dict())
+    public_game = PublicGame(**game.model_dump())
     return public_game
 
 

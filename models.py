@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Game(BaseModel):
@@ -18,11 +18,11 @@ class Game(BaseModel):
     block_number: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
-    @validator("closing_date", pre=True, always=True)
-    def force_utc(cls, v):  # noqa: N805
+    @field_validator("closing_date", mode="before")
+    @classmethod
+    def force_utc(cls, v):
         if isinstance(v, datetime):
             return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
         return datetime.fromtimestamp(int(v), tz=timezone.utc)
@@ -38,8 +38,9 @@ class PublicGame(BaseModel):
     block_hash: str = ""
     block_number: int = 0
 
-    @validator("closing_date", pre=True, always=True)
-    def force_utc(cls, v):  # noqa: N805
+    @field_validator("closing_date", mode="before")
+    @classmethod
+    def force_utc(cls, v):
         if isinstance(v, datetime):
             return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
         return datetime.fromtimestamp(int(v), tz=timezone.utc)
