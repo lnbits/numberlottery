@@ -12,7 +12,7 @@ db = Database("ext_numberlottery")
 
 async def create_game(data: Game) -> Game:
     data.id = urlsafe_short_hash()
-    game = Game(**data.dict())
+    game = Game(**data.model_dump())
     await db.insert("numberlottery.games", game)
     return game
 
@@ -58,7 +58,7 @@ async def delete_game(game_id: str) -> None:
 
 async def create_player(data: Player) -> Player:
     data.id = urlsafe_short_hash()
-    player = Player(**data.dict())
+    player = Player(**data.model_dump())
     await db.insert("numberlottery.players", player)
     return player
 
