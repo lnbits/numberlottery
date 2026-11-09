@@ -20,12 +20,10 @@ class Game(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    @field_validator("closing_date", mode="before")
+    @field_validator("closing_date")
     @classmethod
-    def force_utc(cls, v):
-        if isinstance(v, datetime):
-            return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
-        return datetime.fromtimestamp(int(v), tz=timezone.utc)
+    def force_utc(cls, v: datetime) -> datetime:
+        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
 
 
 class PublicGame(BaseModel):
@@ -38,12 +36,10 @@ class PublicGame(BaseModel):
     block_hash: str = ""
     block_number: int = 0
 
-    @field_validator("closing_date", mode="before")
+    @field_validator("closing_date")
     @classmethod
-    def force_utc(cls, v):
-        if isinstance(v, datetime):
-            return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
-        return datetime.fromtimestamp(int(v), tz=timezone.utc)
+    def force_utc(cls, v: datetime) -> datetime:
+        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
 
 
 class Player(BaseModel):
