@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends
 from lnbits.core.crud import get_user
 from lnbits.core.models import WalletTypeInfo
 from lnbits.core.services import create_invoice
+from lnbits.core.services.lnurl import handle as lnurl_handle
 from lnbits.decorators import require_admin_key
 from lnurl import LnurlPayResponse
-from lnurl import handle as lnurl_handle
 from starlette.exceptions import HTTPException
 
 from .crud import (

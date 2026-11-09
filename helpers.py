@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
-import httpx
 from lnbits.core.services import get_pr_from_lnurl, pay_invoice
+from lnbits.utils.safe_http import SafeHttpClient
 
 from .crud import (
     get_all_unpaid_players,
@@ -12,7 +12,7 @@ from .crud import (
 
 
 async def get_latest_block(mempool: str):
-    async with httpx.AsyncClient() as client:
+    async with SafeHttpClient() as client:
         response = await client.get(f"{mempool}/api/blocks")
         assert response.status_code == 200
         return response.json()[0]
